@@ -1,31 +1,63 @@
-import React from 'react';
+import { useState, useEffect } from "react";
 import Radar from 'radar-sdk-js';
-import 'radar-sdk-js/dist/radar.css'
+import 'radar-sdk-js/dist/radar.css';
+import styled from 'styled-components';
 
-export function mapHome () {
+// Styled component for map container
+const MapContainer = styled.div`
+  height: 100vh;
+  width: 100%;
+`;
 
-  class RadarMap extends React.Component {
-    componentDidMount() {
-      Radar.initialize();
+export function MapHome() {
+  const [coordinates, setCoordinates] = useState(null);
+  // const [markers, setMarkers] = useState([]);
 
+  useEffect(() => {
+    Radar.initialize('prj_live_pk_de82543ab49a7a7b86fc1d55c635cf2af48357e3'); // Ensure actual API key is placed here
+
+    navigator.geolocation.getCurrentPosition((position) => {
+      setCoordinates({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (coordinates) {
       const map = Radar.ui.map({
         container: 'map',
+        center: [coordinates.longitude, coordinates.latitude],
+        zoom: 10,
       });
 
-      map.on('click', (e) => {
-        const {lng, lat} = e.lngLat;
+      // const userMarker = new Radar.ui.marker({ text: 'You' })
+      //   .setLngLat([coordinates.longitude, coordinates.latitude])
+      //   .addTo(map);
 
-        const marker = Radar.ui.marker()
-          setLngLat([lng, lat])
-          .addTo(map);
+      map.fitToMarkers({ maxZoom: 14, padding: 80 });
 
-        map.fitToMarkets ({ maxZoom: 14, padding: 80 });
+      // markers.forEach((marker) => {
+      //   Radar.ui.marker({ text: marker.name })
+      //     .setLngLat([marker.lngLat[0], marker.lngLat[1]])
+      //     .addTo(map);
+      // });
+    }
+  }, [coordinates]);
 
-        marker.on('click', (e) => {
-          marker.remove();
-          map.fitToMarkers({ maxZoom: 14, padding: 80 });
-        });
-      });
-    };
-  }
-};
+  // Add marker example function
+  // const addMarker = (lng, lat, name) => {
+  //   setMarkers((prevMarkers) => [...prevMarkers, { name, lngLat: [lng, lat] }]);
+  // };
+
+  return (
+    <div className="radar-map-page">
+      <MapContainer>
+        <div id="map" style={{ height: '100%', width: '100%' }}></div>
+      </MapContainer>
+    </div>
+  );
+}
+
+export default MapHome;
