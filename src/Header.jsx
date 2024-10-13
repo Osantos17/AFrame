@@ -1,12 +1,11 @@
+import './Header.css'
+
 export function Header() {
   return(
     <header>
       <div className="title_border">
-        <div className="title">
-          A-FRAME
-        </div>
-        <div>
-          <img src="./src/Images/LogoBlackTrans.png" width="500" height="500"/>
+        <div className='logo'>
+          <img src="./src/Images/LogoWhiteTrans.png" width="40" height="40"/>
         </div>
       </div>
     </header>

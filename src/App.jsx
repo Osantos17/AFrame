@@ -3,6 +3,7 @@ import {MapHome} from "/src/Location/MapHome.jsx";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { SurfReport} from '/src/forecast/surfReport.jsx';
 import { Content } from "./Content.jsx";
+import { BottomNav } from "./BottomNav.jsx";
 
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/surfreport" element={< SurfReport />} />
           <Route path="/content" element={<Content />} />
         </Routes>
+        <BottomNav />
       </BrowserRouter>
     </div>
   )

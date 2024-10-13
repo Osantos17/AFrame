@@ -1,3 +1,4 @@
+import './MapHome.css';
 import { useState, useEffect } from "react";
 import Radar from 'radar-sdk-js';
 import 'radar-sdk-js/dist/radar.css';
@@ -36,7 +37,7 @@ export function MapHome() {
       //   .setLngLat([coordinates.longitude, coordinates.latitude])
       //   .addTo(map);
 
-      map.fitToMarkers({ maxZoom: 14, padding: 80 });
+      map.fitToMarkers({ maxZoom: 14, padding: 40 });
 
       // markers.forEach((marker) => {
       //   Radar.ui.marker({ text: marker.name })
@@ -54,7 +55,7 @@ export function MapHome() {
   return (
     <div className="radar-map-page">
       <MapContainer>
-        <div id="map" style={{ height: '100%', width: '100%' }}></div>
+        <div id="map" style={{ height: '70%', width: '100%' }}></div>
       </MapContainer>
     </div>
   );
