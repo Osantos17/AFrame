@@ -6,14 +6,17 @@ export function BottomNav () {
   return (
     <div className="mt-0">
       <div className="navContainer flex justify-evenly items-center">
-        <div className='Home my-2'> 
+        <div className='Home flex flex-col items-center my-2'> 
           <img src="./src/Images/Home.png" width="30" height="30"/>
+          <h3 className='bottomNav items-center'>HOME</h3>
         </div>
-        <div className='Search my-2'> 
+        <div className='Search flex flex-col items-center my-2'> 
           <img src="./src/Images/Search.png" width="30" height="30"/>
+          <h3 className='bottomNav items-center'>SEARCH</h3>
         </div>
-        <div className='Account my-2'> 
+        <div className='Account flex flex-col items-center my-2'> 
           <img src="./src/Images/Account.png" width="30" height="30"/>
+          <h3 className='bottomNav items-center'>ACCOUNT</h3>
         </div>
       </div>
     </div>

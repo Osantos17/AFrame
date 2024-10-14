@@ -1,5 +1,10 @@
 .navContainer {
   background-color: black;
   height: 60px;
-  border-top: 1px solid white;
+}
+
+.bottomNav{
+  color: white;
+  font-size: 7px;
+  padding-top: 3px;
 }
