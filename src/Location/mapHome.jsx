@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 // Styled component for map container
 const MapContainer = styled.div`
-  height: 100vh;
+  height: calc(100vh - 120px);
   width: 100%;
 `;
 
@@ -27,10 +27,27 @@ export function MapHome() {
 
   useEffect(() => {
     if (coordinates) {
+      console.log('Coordinates:', coordinates);
       const map = Radar.ui.map({
         container: 'map',
         center: [coordinates.longitude, coordinates.latitude],
         zoom: 10,
+      });
+
+      map.on('load', () => {
+        const { lng, lat } = map.getCenter();
+
+        // Add custom marker to the map at the center
+        Radar.ui.marker({
+          url: 'https://radar.com/static/image/logo.png', // Replace with your marker image URL
+          width: '24px',
+          height: '24px',
+          popup: {
+            text: 'Radar HQ', // Text to display in popup
+          },
+        })
+        .setLngLat([lng, lat]) // Set the marker position
+        .addTo(map); // Add the marker to the map
       });
 
       // const userMarker = new Radar.ui.marker({ text: 'You' })
@@ -53,9 +70,9 @@ export function MapHome() {
   // };
 
   return (
-    <div className="radar-map-page">
+    <div className="radar-map-page flex flex-col h-full">
       <MapContainer>
-        <div id="map" style={{ height: '70%', width: '100%' }}></div>
+        <div id="map" className='h-full w-full'></div>
       </MapContainer>
     </div>
   );

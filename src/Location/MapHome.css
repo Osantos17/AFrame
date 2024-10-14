@@ -1,0 +1,9 @@
+/* MapHome.css */
+.radar-map-page {
+  height: calc(100vh - 64px); /* Adjust for Header height */
+}
+
+#map {
+  height: 100%; /* Ensure the map takes full height */
+  width: 100%;  /* Ensure the map takes full width */
+}

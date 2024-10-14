@@ -1,3 +1,5 @@
 .navContainer {
   background-color: black;
+  height: 60px;
+  border-top: 1px solid white;
 }
