@@ -37,17 +37,14 @@ export function MapHome() {
       map.on('load', () => {
         const { lng, lat } = map.getCenter();
 
-        // Add custom marker to the map at the center
+    
         Radar.ui.marker({
-          url: 'https://radar.com/static/image/logo.png', // Replace with your marker image URL
-          width: '24px',
-          height: '24px',
-          popup: {
-            text: 'Radar HQ', // Text to display in popup
-          },
+          url: './src/Images/Location.png', 
+          width: '14px',
+          height: '14px',
         })
-        .setLngLat([lng, lat]) // Set the marker position
-        .addTo(map); // Add the marker to the map
+        .setLngLat([lng, lat]) 
+        .addTo(map); 
       });
 
       // const userMarker = new Radar.ui.marker({ text: 'You' })
