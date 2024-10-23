@@ -1,11 +1,13 @@
 header{
   background-color: black;
   height: 60px;
+  border-bottom: 1px white solid;
 }
 
 .title_border{
   display: flex;
   justify-content: center;
+
 }
 
 .logo {

@@ -12,10 +12,11 @@ const MapContainer = styled.div`
 
 export function MapHome() {
   const [coordinates, setCoordinates] = useState(null);
+  const [locations, setLocations] = useState([])
   // const [markers, setMarkers] = useState([]);
 
   useEffect(() => {
-    Radar.initialize('prj_live_pk_de82543ab49a7a7b86fc1d55c635cf2af48357e3'); // Ensure actual API key is placed here
+    Radar.initialize('prj_live_pk_de82543ab49a7a7b86fc1d55c635cf2af48357e3');
 
     navigator.geolocation.getCurrentPosition((position) => {
       setCoordinates({
@@ -26,7 +27,16 @@ export function MapHome() {
   }, []);
 
   useEffect(() => {
-    if (coordinates) {
+    fetch('http://127.0.0.1:5000/locations')
+      .then((response) => response.json())
+      .then((data) => {
+        setLocations(data);
+      })
+      .catch((error) => console.error('Error fetching locations:', error));
+  }, []);
+
+  useEffect(() => {
+    if (coordinates && locations.length > 0) {
       console.log('Coordinates:', coordinates);
       const map = Radar.ui.map({
         container: 'map',
@@ -35,17 +45,25 @@ export function MapHome() {
       });
 
       map.on('load', () => {
-        const { lng, lat } = map.getCenter();
-
-    
         Radar.ui.marker({
-          url: './src/Images/Location.png', 
+          url: './src/Images/CurrentLocation.png', 
           width: '14px',
           height: '14px',
         })
-        .setLngLat([lng, lat]) 
+        .setLngLat([coordinates.longitude, coordinates.latitude]) 
         .addTo(map); 
+
+        locations.forEach((location) => {
+          Radar.ui.marker({
+            url: './src/Images/Locations.png', 
+            width: '14px',
+            height: '14px',
+          })
+          .setLngLat([location.longitude, location.latitude])
+          .addTo(map);
+        });
       });
+
 
       // const userMarker = new Radar.ui.marker({ text: 'You' })
       //   .setLngLat([coordinates.longitude, coordinates.latitude])
@@ -59,7 +77,7 @@ export function MapHome() {
       //     .addTo(map);
       // });
     }
-  }, [coordinates]);
+  }, [coordinates, locations]);
 
   // Add marker example function
   // const addMarker = (lng, lat, name) => {

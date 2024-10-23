@@ -7,7 +7,7 @@ export function BottomNav () {
     <div className="mt-0">
       <div className="navContainer flex justify-evenly items-center">
         <div className='Home flex flex-col items-center my-2'> 
-          <img src="./src/Images/Kami.png" width="45" height="45"/>
+          <img src="./src/Images/Kami.png" width="35" height="35"/>
           <h3 className='bottomNav items-center'>HOME</h3>
         </div>
         <div className='Search flex flex-col items-center my-2'> 
