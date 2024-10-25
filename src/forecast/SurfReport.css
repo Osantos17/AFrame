@@ -1,0 +1,9 @@
+.surfcontainer {
+  height: 80px;
+  background-color: rgb(36, 57, 70);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: height 0.2s ease; 
+}

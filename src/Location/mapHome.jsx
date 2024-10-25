@@ -3,17 +3,17 @@ import { useState, useEffect } from "react";
 import Radar from 'radar-sdk-js';
 import 'radar-sdk-js/dist/radar.css';
 import styled from 'styled-components';
+import { SurfReport } from "/src/forecast/SurfReport.jsx";
 
 // Styled component for map container
 const MapContainer = styled.div`
-  height: calc(100vh - 120px);
+  height: calc(100vh - 120px - 80px);
   width: 100%;
 `;
 
 export function MapHome() {
   const [coordinates, setCoordinates] = useState(null);
-  const [locations, setLocations] = useState([])
-  // const [markers, setMarkers] = useState([]);
+  const [locations, setLocations] = useState([]);
 
   useEffect(() => {
     Radar.initialize('prj_live_pk_de82543ab49a7a7b86fc1d55c635cf2af48357e3');
@@ -37,7 +37,6 @@ export function MapHome() {
 
   useEffect(() => {
     if (coordinates && locations.length > 0) {
-      console.log('Coordinates:', coordinates);
       const map = Radar.ui.map({
         container: 'map',
         center: [coordinates.longitude, coordinates.latitude],
@@ -46,16 +45,16 @@ export function MapHome() {
 
       map.on('load', () => {
         Radar.ui.marker({
-          url: './src/Images/CurrentLocation.png', 
+          url: './src/Images/CurrentLocation.png',
           width: '14px',
           height: '14px',
         })
-        .setLngLat([coordinates.longitude, coordinates.latitude]) 
-        .addTo(map); 
+        .setLngLat([coordinates.longitude, coordinates.latitude])
+        .addTo(map);
 
         locations.forEach((location) => {
           Radar.ui.marker({
-            url: './src/Images/Locations.png', 
+            url: './src/Images/Locations.png',
             width: '14px',
             height: '14px',
           })
@@ -64,31 +63,16 @@ export function MapHome() {
         });
       });
 
-
-      // const userMarker = new Radar.ui.marker({ text: 'You' })
-      //   .setLngLat([coordinates.longitude, coordinates.latitude])
-      //   .addTo(map);
-
       map.fitToMarkers({ maxZoom: 14, padding: 40 });
-
-      // markers.forEach((marker) => {
-      //   Radar.ui.marker({ text: marker.name })
-      //     .setLngLat([marker.lngLat[0], marker.lngLat[1]])
-      //     .addTo(map);
-      // });
     }
   }, [coordinates, locations]);
-
-  // Add marker example function
-  // const addMarker = (lng, lat, name) => {
-  //   setMarkers((prevMarkers) => [...prevMarkers, { name, lngLat: [lng, lat] }]);
-  // };
 
   return (
     <div className="radar-map-page flex flex-col h-full">
       <MapContainer>
         <div id="map" className='h-full w-full'></div>
       </MapContainer>
+      <SurfReport />
     </div>
   );
 }

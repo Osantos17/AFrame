@@ -1,7 +1,8 @@
 .navContainer {
   background-color: black;
   height: 60px;
-  border-top: white 1px solid;
+  border-top: white .2px solid;
+  z-index: 100;
 }
 
 .bottomNav{

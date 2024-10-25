@@ -1,7 +1,10 @@
+import './SurfReport.css'; 
+
 export function SurfReport() {
+
   return (
-    <div>
-      <p>Test</p>
+    <div className='surfcontainer'>
+      Hello
     </div>
   );
 }
