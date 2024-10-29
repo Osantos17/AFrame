@@ -1,9 +1,10 @@
 import {Header} from "./Header";
-import { Fetch } from "./Fetch"
+import { Fetch } from "./Fetch";
 import {MapHome} from "/src/Location/MapHome.jsx";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 // import { Content } from "./Content.jsx";
 import { BottomNav } from "./BottomNav.jsx";
+import { ForecastResult } from "/src/forecast/ForecastResult.jsx";
 
 function App() {
   return(
@@ -14,6 +15,7 @@ function App() {
           <Routes>
             <Route path="*" element={<MapHome />} />
             <Route path='/data' element={<Fetch />} />
+            <Route path='/results' element={<ForecastResult />} />
           </Routes>
          </div>
         <BottomNav />

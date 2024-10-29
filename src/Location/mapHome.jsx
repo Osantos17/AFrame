@@ -5,15 +5,16 @@ import 'radar-sdk-js/dist/radar.css';
 import styled from 'styled-components';
 import { SurfReport } from "/src/forecast/SurfReport.jsx";
 
-// Styled component for map container
+// Use a transient prop by prefixing it with `$`
 const MapContainer = styled.div`
-  height: calc(100vh - 120px - 80px);
+  height: ${({ $zoomlevel }) => ($zoomlevel >= 10 ? 'calc(100vh - 120px - 80px)' : 'calc(100vh - 120px)')}; /* Adjust height calculation */
   width: 100%;
 `;
 
 export function MapHome() {
   const [coordinates, setCoordinates] = useState(null);
   const [locations, setLocations] = useState([]);
+  const [zoomlevel, setZoomLevel] = useState(10);
 
   useEffect(() => {
     Radar.initialize('prj_live_pk_de82543ab49a7a7b86fc1d55c635cf2af48357e3');
@@ -40,7 +41,12 @@ export function MapHome() {
       const map = Radar.ui.map({
         container: 'map',
         center: [coordinates.longitude, coordinates.latitude],
-        zoom: 10,
+        zoom: zoomlevel,
+      });
+
+      map.on('zoomend', () => {
+        const currentZoom = map.getZoom();
+        setZoomLevel(currentZoom);
       });
 
       map.on('load', () => {
@@ -65,16 +71,14 @@ export function MapHome() {
 
       map.fitToMarkers({ maxZoom: 14, padding: 40 });
     }
-  }, [coordinates, locations]);
+  }, [coordinates, locations, zoomlevel]);
 
   return (
     <div className="radar-map-page flex flex-col h-full">
-      <MapContainer>
+      <MapContainer $zoomlevel={zoomlevel}> {/* Use transient prop here */}
         <div id="map" className='h-full w-full'></div>
       </MapContainer>
-      <SurfReport />
+      {zoomlevel >= 10 && <SurfReport />}
     </div>
   );
 }
-
-export default MapHome;

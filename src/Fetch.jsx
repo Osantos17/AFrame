@@ -1,7 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
 import { useState, useEffect } from 'react';
-
-const supabase = createClient('https://surforecast.supabase.co', 'public-anon-key');
 
 export function Fetch() {
   const [locations, setLocations] = useState([]);
@@ -9,24 +6,18 @@ export function Fetch() {
 
   useEffect(() => {
     const fetchSurfData = async () => {
-      const { data: locationsData, error: locationsError } = await supabase
-        .from('locations')
-        .select('*');
-
-      if (locationsError) {
-        console.error('Error Fetching locations:', locationsError);
-      } else {
+      try {
+        // Fetch locations from Flask API
+        const locationsResponse = await fetch('http://127.0.0.1:5000/locations');
+        const locationsData = await locationsResponse.json();
         setLocations(locationsData);
-      }
-
-      const { data: surfDataResult, error: surfError } = await supabase
-        .from('surf_data')
-        .select('*');
-
-      if (surfError) {
-        console.error('Error fetching surf data:', surfError);
-      } else {
+        
+        // Fetch surf data from Flask API
+        const surfDataResponse = await fetch('http://127.0.0.1:5000/surf-data');
+        const surfDataResult = await surfDataResponse.json();
         setSurfData(surfDataResult);
+      } catch (error) {
+        console.error('Error Fetching data:', error);
       }
     };
 
