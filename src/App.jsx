@@ -4,7 +4,8 @@ import {MapHome} from "/src/Location/MapHome.jsx";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 // import { Content } from "./Content.jsx";
 import { BottomNav } from "./BottomNav.jsx";
-import { ForecastResult } from "/src/forecast/ForecastResult.jsx";
+import { LongForecast } from "/src/forecast/LongForecast.jsx";
+import { ShortForecast } from "/src/forecast/ShortForecast.jsx";
 
 function App() {
   return(
@@ -15,7 +16,8 @@ function App() {
           <Routes>
             <Route path="*" element={<MapHome />} />
             <Route path='/data' element={<Fetch />} />
-            <Route path='/results' element={<ForecastResult />} />
+            <Route path='/results' element={<LongForecast />} />
+            <Route path='/short' element={<ShortForecast />} />
           </Routes>
          </div>
         <BottomNav />

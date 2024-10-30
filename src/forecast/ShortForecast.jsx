@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export const ForecastResult = () => {
+export const ShortForecast = () => {
     const [data, setData] = useState([]);
 
     useEffect(() => {
@@ -25,7 +25,7 @@ export const ForecastResult = () => {
                     <h3>Surf Data</h3>
                     {location.surf_data.map(surf => (
                         <div key={surf.id}>
-                            <p>Dagte: {surf.date} ({surf.date})</p>
+                            <p>Date: {surf.date} ({surf.date})</p>
                             <p>Swell Direction: {surf.swellDir} ({surf.swellDir16Point})</p>
                             <p>Swell Height: {surf.swellHeight_ft} ft</p>
                             <p>Time: {surf.time}</p>
@@ -36,7 +36,7 @@ export const ForecastResult = () => {
                     <h3>Tide Data</h3>
                     {location.tide_data.map(tide => (
                         <div key={tide.id}>
-                            <p>Tide Height: {tide.tide_height} ft</p>
+                            <p>Tide Height short: {tide.tide_height} ft</p>
                             <p>Tide Time: {tide.tide_time}</p>
                         </div>
                     ))}
