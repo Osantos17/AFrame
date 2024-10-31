@@ -18,6 +18,7 @@ export function MapHome() {
   const [zoomlevel, setZoomLevel] = useState(10);
   const [map, setMap] = useState(null);
   const [currentLocationMarker, setCurrentLocationMarker] = useState(null);
+  const [selectedLocationId, setSelectedLocationId] = useState(null); // New state for selected location
 
   useEffect(() => {
     Radar.initialize('prj_live_pk_de82543ab49a7a7b86fc1d55c635cf2af48357e3');
@@ -45,6 +46,7 @@ export function MapHome() {
       });
       setMap(newMap);
 
+      // Add the user's current location marker
       const userMarker = Radar.ui.marker({
         url: './src/Images/CurrentLocation.png',
         width: '14px',
@@ -65,13 +67,27 @@ export function MapHome() {
     }
   }, [coordinates, locations, map]);
 
+  // Debug log to check if setSelectedLocationId is updating the selected location ID
+  useEffect(() => {
+    console.log(`Selected Location ID in MapHome: ${selectedLocationId}`);
+  }, [selectedLocationId]);
+
   return (
     <div className="radar-map-page flex flex-col h-full">
       <MapContainer $zoomlevel={zoomlevel}>
         <div id="map" className='h-full w-full'></div>
       </MapContainer>
-      <LocationMarkers map={map} locations={locations} zoomlevel={zoomlevel} />
-      {zoomlevel >= 10 && <SurfReport />}
+      <LocationMarkers 
+        map={map} 
+        locations={locations} 
+        zoomlevel={zoomlevel} 
+        onMarkerClick={(locationId) => {
+          setSelectedLocationId(locationId);
+          console.log('Selected Location ID in MapHome:', locationId); // Log selected ID
+        }} 
+      />
+      {zoomlevel >= 10 && <SurfReport selectedLocationId={selectedLocationId} />}
     </div>
   );
+  
 }
