@@ -1,14 +1,13 @@
 import { useEffect } from 'react';
 import Radar from 'radar-sdk-js';
 
-
 export function LocationMarkers({ map, locations, zoomlevel, onMarkerClick }) {
   useEffect(() => {
-    console.log('Locations:', locations); // Check location objects
-
     if (map && locations.length > 0) {
+      let markers = [];
+
       const addMarkers = () => {
-        const markers = locations.map(location => {
+        markers = locations.map(location => {
           const marker = Radar.ui.marker({
             url: './src/Images/Locations.png',
             width: '14px',
@@ -17,21 +16,16 @@ export function LocationMarkers({ map, locations, zoomlevel, onMarkerClick }) {
             .setLngLat([location.longitude, location.latitude])
             .addTo(map);
 
-          // Click handler with log
-          // Update this click handler to call onMarkerClick with location ID
           marker.getElement().addEventListener('click', () => {
-            onMarkerClick(location.id); // Use `id` instead of `location_id`
+            onMarkerClick(location.id); // Ensure the click function correctly passes the ID
           });
-          
 
           return marker;
         });
-        return markers;
       };
 
-      let markers = [];
       if (zoomlevel >= 10) {
-        markers = addMarkers();
+        addMarkers();
       }
 
       const onZoomEnd = () => {
@@ -40,7 +34,7 @@ export function LocationMarkers({ map, locations, zoomlevel, onMarkerClick }) {
           markers.forEach(marker => marker.remove());
           markers = [];
         } else if (markers.length === 0) {
-          markers = addMarkers();
+          addMarkers();
         }
       };
 

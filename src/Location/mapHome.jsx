@@ -1,11 +1,10 @@
-// MapHome.jsx
 import './MapHome.css';
 import { useState, useEffect } from "react";
 import Radar from 'radar-sdk-js';
 import 'radar-sdk-js/dist/radar.css';
 import styled from 'styled-components';
-import { SurfReport } from "/src/forecast/SurfReport.jsx";
 import { LocationMarkers } from './LocationMarkers';
+import { LocationDetails } from './LocationDetails';
 
 const MapContainer = styled.div`
   height: ${({ $zoomlevel }) => ($zoomlevel >= 10 ? 'calc(100vh - 120px - 80px)' : 'calc(100vh - 120px)')};
@@ -18,7 +17,26 @@ export function MapHome() {
   const [zoomlevel, setZoomLevel] = useState(10);
   const [map, setMap] = useState(null);
   const [currentLocationMarker, setCurrentLocationMarker] = useState(null);
-  const [selectedLocationId, setSelectedLocationId] = useState(null); // New state for selected location
+  const [selectedLocationId, setSelectedLocationId] = useState(null); // State for selected location
+
+  // Function to find the closest location
+  const findClosestLocation = (userCoordinates, locations) => {
+    let closestLocation = null;
+    let closestDistance = Infinity;
+
+    locations.forEach(location => {
+      const distance = Math.sqrt(
+        Math.pow(location.latitude - userCoordinates.latitude, 2) +
+        Math.pow(location.longitude - userCoordinates.longitude, 2)
+      );
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestLocation = location;
+      }
+    });
+
+    return closestLocation;
+  };
 
   useEffect(() => {
     Radar.initialize('prj_live_pk_de82543ab49a7a7b86fc1d55c635cf2af48357e3');
@@ -33,9 +51,19 @@ export function MapHome() {
   useEffect(() => {
     fetch('http://127.0.0.1:5000/locations')
       .then((response) => response.json())
-      .then((data) => setLocations(data))
+      .then((data) => {
+        setLocations(data);
+
+        // Set initial location as the closest to the user's coordinates
+        if (coordinates.latitude && coordinates.longitude) {
+          const closestLocation = findClosestLocation(coordinates, data);
+          if (closestLocation) {
+            setSelectedLocationId(closestLocation.id);
+          }
+        }
+      })
       .catch((error) => console.error('Error fetching locations:', error));
-  }, []);
+  }, [coordinates]);
 
   useEffect(() => {
     if (coordinates.latitude && coordinates.longitude && locations.length > 0 && !map) {
@@ -46,7 +74,6 @@ export function MapHome() {
       });
       setMap(newMap);
 
-      // Add the user's current location marker
       const userMarker = Radar.ui.marker({
         url: './src/Images/CurrentLocation.png',
         width: '14px',
@@ -57,7 +84,6 @@ export function MapHome() {
 
       setCurrentLocationMarker(userMarker);
 
-      // Handle zoom level changes
       newMap.on('zoomend', () => {
         const currentZoom = newMap.getZoom();
         setZoomLevel(currentZoom);
@@ -66,11 +92,6 @@ export function MapHome() {
       newMap.fitToMarkers({ maxZoom: 11, padding: 40 });
     }
   }, [coordinates, locations, map]);
-
-  // Debug log to check if setSelectedLocationId is updating the selected location ID
-  useEffect(() => {
-    console.log(`Selected Location ID in MapHome: ${selectedLocationId}`);
-  }, [selectedLocationId]);
 
   return (
     <div className="radar-map-page flex flex-col h-full">
@@ -86,8 +107,11 @@ export function MapHome() {
           console.log('Selected Location ID in MapHome:', locationId); // Log selected ID
         }} 
       />
-      {zoomlevel >= 10 && <SurfReport selectedLocationId={selectedLocationId} />}
+      {zoomlevel >= 10 && (
+        <>
+          <LocationDetails selectedLocationId={selectedLocationId} /> {/* Render LocationDetails */}
+        </>
+      )}
     </div>
   );
-  
 }
