@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { TideGraph } from '/src/forecast/TideGraph.jsx';
 
 export function LocationDetails({ selectedLocationId }) {
   const [locationDetails, setLocationDetails] = useState(null);
@@ -9,7 +10,7 @@ export function LocationDetails({ selectedLocationId }) {
 
   useEffect(() => {
     const fetchLocationData = async () => {
-      if (!selectedLocationId) return; // Early exit if no ID
+      if (!selectedLocationId) return;
 
       try {
         setLoading(true);
@@ -19,8 +20,8 @@ export function LocationDetails({ selectedLocationId }) {
         }
         const data = await response.json();
         setLocationDetails(data);
-        setSurfData(data.surf_data || []); // Directly set surf data from the response
-        setTideData(data.tide_data || []); // Directly set tide data from the response
+        setSurfData(data.surf_data || []);
+        setTideData(data.tide_data || []);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -36,35 +37,23 @@ export function LocationDetails({ selectedLocationId }) {
   if (!locationDetails) return <div>No location details available.</div>;
 
   const currentDate = new Date();
-  const currentTime = currentDate.getHours() * 100 + Math.floor(currentDate.getMinutes() / 60 * 100); // e.g., 900 for 9:00 AM
-  const firstSurfDate = surfData.length > 0 ? new Date(surfData[0].date) : null; // Convert to Date object
+  const currentTime = currentDate.getHours() * 100 + Math.floor(currentDate.getMinutes() / 60 * 100);
 
-  // Format the date as "MM/DD"
-  const formatDate = (date) => {
-    const options = { month: '2-digit', day: '2-digit' };
-    return date.toLocaleDateString(undefined, options);
-  };
+  const firstSurfDate = surfData.length > 0 ? new Date(surfData[0].date) : null;
+  const formatDate = (date) => date ? date.toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' }) : '';
 
-  // Check if there is a valid date to format
   const formattedDate = firstSurfDate ? formatDate(firstSurfDate) : '';
 
-  // Find surf data for the first date
   const surfDataForFirstDate = surfData.filter(surf => {
     const surfDate = new Date(surf.date);
     return surfDate.getMonth() === firstSurfDate.getMonth() && surfDate.getDate() === firstSurfDate.getDate();
   });
 
-  // Find the surf data entry closest to the current time
   const closestSurfData = surfDataForFirstDate.reduce((prev, curr) => {
     const prevTime = Math.abs(prev.time - currentTime);
     const currTime = Math.abs(curr.time - currentTime);
     return currTime < prevTime ? curr : prev;
   }, surfDataForFirstDate[0]);
-
-  const tidesForFirstDate = tideData.filter(tide => {
-    const tideDate = new Date(tide.tide_date);
-    return tideDate.getMonth() === firstSurfDate.getMonth() && tideDate.getDate() === firstSurfDate.getDate();
-  }); // Use the correct property
 
   return (
     <div className='rounded-xl shadow-lg flex items-center'>
@@ -87,19 +76,7 @@ export function LocationDetails({ selectedLocationId }) {
       ) : (
         <p>No surf data available for this date.</p>
       )}
-      {tidesForFirstDate.length > 0 ? (
-        <div>
-          {tidesForFirstDate.map(tide => (
-            <div key={tide.id}>
-              <p>{tide.tide_height}</p>
-              <p>{tide.tide_time}</p>
-              <p>{tide.tide_type}</p>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p>No tide data available for this date.</p>
-      )}
+      <TideGraph tideData={tideData} surfDate={firstSurfDate} />
     </div>
   );
 }
