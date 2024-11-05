@@ -6,6 +6,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { BottomNav } from "./BottomNav.jsx";
 import { LongForecast } from "/src/forecast/LongForecast.jsx";
 import { ShortForecast } from "/src/forecast/ShortForecast.jsx";
+import { TideLongGraphPage } from "./forecast/TideLongGraphPage.jsx";
 
 function App() {
   return(
@@ -18,6 +19,7 @@ function App() {
             <Route path='/data' element={<Fetch />} />
             <Route path='/results' element={<LongForecast />} />
             <Route path='/short' element={<ShortForecast />} />
+            <Route path='/long' element={<TideLongGraphPage />} />
           </Routes>
          </div>
         <BottomNav />

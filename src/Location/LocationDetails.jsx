@@ -37,21 +37,33 @@ export function LocationDetails({ selectedLocationId }) {
   if (!locationDetails) return <div>No location details available.</div>;
 
   const currentDate = new Date();
-  const currentTime = currentDate.getHours() * 100 + Math.floor(currentDate.getMinutes() / 60 * 100);
+  const currentTime = currentDate.getHours() * 100 + Math.floor((currentDate.getMinutes() / 60) * 100);
+
+  const parseSurfTime = (timeString) => {
+    const [hourStr, period] = timeString.match(/(\d+)(AM|PM)/).slice(1);
+    let hour = parseInt(hourStr, 10);
+    if (period === 'PM' && hour !== 12) hour += 12;
+    if (period === 'AM' && hour === 12) hour = 0;
+    return hour * 100;
+  };
 
   const firstSurfDate = surfData.length > 0 ? new Date(surfData[0].date) : null;
-  const formatDate = (date) => date ? date.toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' }) : '';
 
-  const formattedDate = firstSurfDate ? formatDate(firstSurfDate) : '';
+  const formatDateUTC = (date) =>
+    date
+      ? `${String(date.getUTCMonth() + 1).padStart(2, '0')}/${String(date.getUTCDate()).padStart(2, '0')}`
+      : '';
+
+  const formattedDate = firstSurfDate ? formatDateUTC(firstSurfDate) : '';
 
   const surfDataForFirstDate = surfData.filter(surf => {
     const surfDate = new Date(surf.date);
-    return surfDate.getMonth() === firstSurfDate.getMonth() && surfDate.getDate() === firstSurfDate.getDate();
+    return surfDate.getUTCMonth() === firstSurfDate.getUTCMonth() && surfDate.getUTCDate() === firstSurfDate.getUTCDate();
   });
 
   const closestSurfData = surfDataForFirstDate.reduce((prev, curr) => {
-    const prevTime = Math.abs(prev.time - currentTime);
-    const currTime = Math.abs(curr.time - currentTime);
+    const prevTime = Math.abs(parseSurfTime(prev.time) - currentTime);
+    const currTime = Math.abs(parseSurfTime(curr.time) - currentTime);
     return currTime < prevTime ? curr : prev;
   }, surfDataForFirstDate[0]);
 
@@ -66,7 +78,7 @@ export function LocationDetails({ selectedLocationId }) {
           <p>{closestSurfData.time}</p>
           <div>
             <h3>Swell</h3>
-            <p>{closestSurfData.swellHeight_ft} ft, {closestSurfData.swelldir}, {closestSurfData.swellperiod_secs}</p>
+            <p>{closestSurfData.swellHeight_ft} ft, {closestSurfData.swelldir}, {closestSurfData.swellperiod_secs}s</p>
           </div>
           <div>
             <h3>Wind</h3>
