@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import LineGraph from 'react-line-graph';
+import { TimedGraph } from './TimedGraph';
 
 export function TideLongGraph({ tideData, boundaryTideData }) {
   if (!tideData || tideData.length === 0) return <p>No tide data available.</p>;
 
-  // Ensure boundaryTideData is an array
+  // Ensure boundaryTideData is an array or convert it to one if it's a single object
   const boundaryDataArray = Array.isArray(boundaryTideData) ? boundaryTideData : [boundaryTideData];
 
   // Combine boundary data with tide data for continuity over 3 days
@@ -58,6 +59,10 @@ export function TideLongGraph({ tideData, boundaryTideData }) {
     <div>
       <div style={{ marginTop: '2rem' }}>
         <LineGraph {...graphProps} />
+      </div>
+
+      <div style={{ width: '30%', zoom: 0.3 }}>
+        <TimedGraph />
       </div>
 
       {hoveredTide && (

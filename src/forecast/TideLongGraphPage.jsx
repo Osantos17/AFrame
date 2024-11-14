@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { TideLongGraph } from './TideLongGraph'; // Adjust the import based on your directory structure
+import LineGraph from 'react-line-graph'
+
 
 export function TideLongGraphPage() {
   const [tideData, setTideData] = useState([]);
