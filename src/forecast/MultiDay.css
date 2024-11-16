@@ -8,11 +8,15 @@ body {
   height: 100vh;
 }
 
+.multiday-container{
+  padding-bottom: 30px;
+}
+
 .graph-container {
-  display: flex;
   background-color: black;
   justify-content: center;
   align-items: center;
-  height: 100%; /* Fill the available screen height */
-  width: 100%;  /* Fill the available screen width */
+  height: 100%;
+  width: 100%; 
+  padding-top: 30px; 
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { TimedGraph } from './TimedGraph';
+import { ForecastSingle } from "./ForecastSingle.jsx";
 import './Multiday.css';
 
 export function MultiDay() {
@@ -107,14 +108,14 @@ export function MultiDay() {
   };
 
   return (
-    <div className="multiday-container flex flex-col items-center justify-center min-h-screen">
+    <div className="multiday-container flex flex-col items-center justify-center">
       <div className="multiday-container">
-      <div className="graph-wrapper">
+      <div className="graph-wrapper ">
         {isLoading ? (
           <p>Loading...</p>
         ) : (
           graphData.map((dayData, index) => (
-            <div key={index} className="graph-container">
+            <div key={index} className="graph-container ">
               <TimedGraph
                 width={graphWidth}  // Pass the calculated width
                 height={graphHeight}  // Pass the calculated height
@@ -125,6 +126,7 @@ export function MultiDay() {
             </div>
           ))
         )}
+        < ForecastSingle/>
       </div>
       </div>
       {tooltip.visible && (

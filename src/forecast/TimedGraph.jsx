@@ -33,9 +33,9 @@ export function TimedGraph({ graphData = [] }) {
   const graphWidth = windowWidth - 40; // 80% of the window width
   const graphHeight = graphWidth / 3 + aspectRatio; 
 
-  const margin = { top: 20, right: 0, bottom: 0, left: 0 };
+  const margin = { top: 30, right: 0, bottom: 0, left: 0 };
   const innerWidth = graphWidth - margin.left - margin.right ;
-  const innerHeight = graphHeight - margin.top - margin.bottom;
+  const innerHeight = graphHeight - margin.top - margin.bottom + 40;
 
   const xScale = useMemo(
     () =>
@@ -90,9 +90,9 @@ export function TimedGraph({ graphData = [] }) {
   return (
     <div className="graph-container">
       <svg width={graphWidth} height={graphHeight}>
-        <rect x={0} y={0} width={graphWidth} height={graphHeight} fill="url(#area-background-gradient)" rx={14} />
-        <LinearGradient id="area-background-gradient" from="#000000" to="#204051" />
-        <LinearGradient id="area-gradient" from="#edffea" to="#edffea" toOpacity={0.05} />
+        <rect x={0} y={0} width={graphWidth} height={graphHeight} fill="url(#area-background-gradient)" rx={0} />
+        <LinearGradient id="area-background-gradient" from="#000000" to="#134f5c"/>
+        <LinearGradient id="area-gradient" from="#6d8c8e" to="#5c7c80" toOpacity={0.01} />
         <GridRows left={margin.left} scale={yScale} width={innerWidth} strokeDasharray="0,1" stroke="#edffea" />
         <GridColumns
           top={margin.top}

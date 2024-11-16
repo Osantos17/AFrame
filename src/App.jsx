@@ -8,6 +8,7 @@ import { MultiDay } from "/src/forecast/MultiDay.jsx";
 import { ShortForecast } from "/src/forecast/ShortForecast.jsx";
 import { TideLongGraphPage } from "./forecast/TideLongGraphPage.jsx";
 import { TimedGraph } from "./forecast/TimedGraph.jsx";
+import { ForecastSingle } from "./forecast/ForecastSingle.jsx";
 import { withTooltip } from '@visx/tooltip';
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
             <Route path='/results' element={<MultiDay />} />
             <Route path='/short' element={<ShortForecast />} />
             <Route path='/long' element={<TideLongGraphPage />} />
+            <Route path='/single' element={<ForecastSingle />} />
             
             <Route 
               path='/time' 
