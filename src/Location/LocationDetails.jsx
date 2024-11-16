@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TideGraph } from '/src/forecast/TideGraph.jsx';
+// import { TideGraph } from '/src/forecast/TideGraph.jsx';
 
 export function LocationDetails({ selectedLocationId }) {
   const [locationDetails, setLocationDetails] = useState(null);
@@ -40,9 +40,13 @@ export function LocationDetails({ selectedLocationId }) {
   const currentTime = currentDate.getHours() * 100 + Math.floor(currentDate.getMinutes() / 60 * 100);
 
   const firstSurfDate = surfData.length > 0 ? new Date(surfData[0].date) : null;
-  const formatDate = (date) => date ? date.toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' }) : '';
+  const formatDate = (date) => date
+  ? date.toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' }).replace(/\//g, '.')
+  : '';
 
   const formattedDate = firstSurfDate ? formatDate(firstSurfDate) : '';
+
+  
 
   const surfDataForFirstDate = surfData.filter(surf => {
     const surfDate = new Date(surf.date);

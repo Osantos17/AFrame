@@ -1,124 +1,131 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { AreaClosed, Line, Bar } from '@visx/shape';
-import { curveMonotoneX } from '@visx/curve';
+import { curveBasis } from '@visx/curve';
 import { GridRows, GridColumns } from '@visx/grid';
-import { scaleTime, scaleLinear } from '@visx/scale';
-import { withTooltip, Tooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
+import { scaleLinear } from '@visx/scale';
+import { Tooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { localPoint } from '@visx/event';
 import { LinearGradient } from '@visx/gradient';
-import { max, extent, bisector } from '@visx/vendor/d3-array';
-import { timeFormat } from '@visx/vendor/d3-time-format';
-import PropTypes from 'prop-types';
+import { max } from '@visx/vendor/d3-array';
+import './TimedGraph.css';
 
-const hardcodedData = [
-  { date: '2024-01-01', close: 250 },
-  { date: '2024-01-02', close: 155 },
-  { date: '2024-01-03', close: 160 },
-  { date: '2024-01-04', close: 158 },
-  { date: '2024-01-05', close: 165 },
-];
-
+// Define custom tooltip styles
 const tooltipStyles = {
   ...defaultStyles,
   background: '#3b6978',
   border: '1px solid white',
-  color: 'white',
+  color: 'black',
 };
 
-const formatDate = timeFormat("%b %d, '%y");
-const getDate = (d) => new Date(d.date);
-const getStockValue = (d) => d.close;
-const bisectDate = bisector((d) => new Date(d.date)).left;
+export function TimedGraph({ graphData = [] }) {
+  const [tooltip, setTooltip] = useState({ visible: false, data: null, left: 0, top: 0 });
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const aspectRatio = 2;
 
-export function TimedGraph({
-  width,
-  height,
-  margin = { top: 0, right: 0, bottom: 0, left: 0 },
-  tooltipData,
-  tooltipLeft,
-  tooltipTop,
-  showTooltip,
-  hideTooltip
-}) {
-  // Use props directly for width and height
-  const innerWidth = width - margin.left - margin.right;
-  const innerHeight = height - margin.top - margin.bottom;
+  const handleResize = () => {
+    setWindowWidth(window.innerWidth);
+  };
+  useEffect(() => {
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  const dateScale = useMemo(
+  const graphWidth = windowWidth - 40; // 80% of the window width
+  const graphHeight = graphWidth / 3 + aspectRatio; 
+
+  const margin = { top: 20, right: 0, bottom: 0, left: 0 };
+  const innerWidth = graphWidth - margin.left - margin.right ;
+  const innerHeight = graphHeight - margin.top - margin.bottom;
+
+  const xScale = useMemo(
     () =>
-      scaleTime({
+      scaleLinear({
         range: [margin.left, innerWidth + margin.left],
-        domain: extent(hardcodedData, getDate),
+        domain: [0, 23],
       }),
     [innerWidth, margin.left]
   );
 
-  const stockValueScale = useMemo(
+  const yScale = useMemo(
     () =>
       scaleLinear({
         range: [innerHeight + margin.top, margin.top],
-        domain: [0, (max(hardcodedData, getStockValue) || 0) + innerHeight / 3],
+        domain: [-20, (max(graphData, (d) => d.tide_height) || 0) + innerHeight / 40],
         nice: true,
       }),
-    [margin.top, innerHeight]
+    [margin.top, innerHeight, graphData]
   );
 
-  const handleTooltip = useCallback(
-    (event) => {
-      const { x } = localPoint(event) || { x: 0 };
-      const x0 = dateScale.invert(x);
-      const index = bisectDate(hardcodedData, x0, 1);
-      const d0 = hardcodedData[index - 1];
-      const d1 = hardcodedData[index];
-      let d = d0;
-      if (d1 && getDate(d1)) {
-        d = x0.valueOf() - getDate(d0).valueOf() > getDate(d1).valueOf() - x0.valueOf() ? d1 : d0;
-      }
-      showTooltip({
-        tooltipData: d,
-        tooltipLeft: x,
-        tooltipTop: stockValueScale(getStockValue(d)),
+  const handleTooltip = (event) => {
+    if (!Array.isArray(graphData) || graphData.length === 0) {
+      setTooltip({ visible: false, data: null });
+      return;
+    }
+
+    const { x } = localPoint(event) || { x: 0 };
+    const x0 = Math.floor(xScale.invert(x));
+    const dataPoint = graphData.find((point) => parseInt(point.graph_time.split(':')[0]) === x0);
+
+    if (dataPoint) {
+      setTooltip({
+        visible: true,
+        data: {
+          time: dataPoint.graph_time,
+          height: dataPoint.tide_height,
+        },
+        left: xScale(x0),
+        top: yScale(dataPoint.tide_height),
       });
-    },
-    [showTooltip, stockValueScale, dateScale]
-  );
+    } else {
+      setTooltip({ visible: false, data: null });
+    }
+  };
 
-  if (width < 10 || height < 10) return null;
+  const hideTooltip = () => {
+    setTooltip({ visible: false, data: null });
+  };
+
+  if (graphWidth < 10 || graphHeight < 10) return null;
 
   return (
-    <div>
-      <svg width={width} height={height}>
-        <rect x={0} y={0} width={width} height={height} fill="url(#area-background-gradient)" rx={14} />
-        <LinearGradient id="area-background-gradient" from="#3b6978" to="#204051" />
-        <LinearGradient id="area-gradient" from="#edffea" to="#edffea" toOpacity={0.1} />
-        <GridRows
-          left={margin.left}
-          scale={stockValueScale}
-          width={innerWidth}
-          strokeDasharray="1,3"
-          stroke="#edffea"
-          strokeOpacity={0}
-          pointerEvents="none"
-        />
+    <div className="graph-container">
+      <svg width={graphWidth} height={graphHeight}>
+        <rect x={0} y={0} width={graphWidth} height={graphHeight} fill="url(#area-background-gradient)" rx={14} />
+        <LinearGradient id="area-background-gradient" from="#000000" to="#204051" />
+        <LinearGradient id="area-gradient" from="#edffea" to="#edffea" toOpacity={0.05} />
+        <GridRows left={margin.left} scale={yScale} width={innerWidth} strokeDasharray="0,1" stroke="#edffea" />
         <GridColumns
           top={margin.top}
-          scale={dateScale}
+          scale={xScale}
           height={innerHeight}
-          strokeDasharray="1,3"
+          strokeDasharray="0,1"
           stroke="#edffea"
-          strokeOpacity={0.2}
-          pointerEvents="none"
+          tickValues={[...Array(24).keys()]} 
         />
+        {[...Array(24).keys()].map((hour) => (
+          <text
+            key={hour}
+            x={xScale(hour)}
+            y={innerHeight + margin.top + 15}
+            textAnchor="middle"
+            fill="#edffea"
+            fontSize={10}
+          >
+            {String(hour).padStart(2, '0')}:00
+          </text>
+        ))}
+
         <AreaClosed
-          data={hardcodedData}
-          x={(d) => dateScale(getDate(d)) ?? 0}
-          y={(d) => stockValueScale(getStockValue(d)) ?? 0}
-          yScale={stockValueScale}
+          data={graphData}
+          x={(d) => xScale(parseInt(d.graph_time.split(':')[0]))}
+          y={(d) => yScale(d.tide_height)}
+          yScale={yScale}
           strokeWidth={1}
           stroke="url(#area-gradient)"
           fill="url(#area-gradient)"
-          curve={curveMonotoneX}
+          curve={curveBasis}
         />
+
         <Bar
           x={margin.left}
           y={margin.top}
@@ -129,83 +136,31 @@ export function TimedGraph({
           onTouchStart={handleTooltip}
           onTouchMove={handleTooltip}
           onMouseMove={handleTooltip}
-          onMouseLeave={() => hideTooltip()}
+          onMouseLeave={hideTooltip}
         />
-        {tooltipData && (
+        {tooltip.visible && (
           <g>
             <Line
-              from={{ x: tooltipLeft, y: margin.top }}
-              to={{ x: tooltipLeft, y: innerHeight + margin.top }}
-              stroke="#75daad"
-              strokeWidth={2}
-              pointerEvents="none"
-              strokeDasharray="5,2"
+              from={{ x: tooltip.left, y: margin.top }}
+              to={{ x: tooltip.left, y: innerHeight + margin.top }}
+              stroke="#ffffff"
+              strokeWidth={1}
+              strokeDasharray="1,0"
             />
-            <circle
-              cx={tooltipLeft}
-              cy={tooltipTop + 1}
-              r={4}
-              fill="black"
-              fillOpacity={0.1}
-              stroke="black"
-              strokeOpacity={0.1}
-              strokeWidth={2}
-              pointerEvents="none"
-            />
-            <circle
-              cx={tooltipLeft}
-              cy={tooltipTop}
-              r={4}
-              fill="#75daad"
-              stroke="white"
-              strokeWidth={2}
-              pointerEvents="none"
-            />
+            <circle cx={tooltip.left} cy={tooltip.top} r={4} fill="#536c82" stroke="white" strokeWidth={1} />
           </g>
         )}
       </svg>
-      {tooltipData && (
+      {tooltip.visible && (
         <div>
-          <TooltipWithBounds
-            key={Math.random()}
-            top={tooltipTop - 12}
-            left={tooltipLeft + 12}
-            style={tooltipStyles}
-          >
-            {`$${getStockValue(tooltipData)}`}
+          <TooltipWithBounds top={tooltip.top - 12} left={tooltip.left + 12} style={tooltipStyles}>
+            {`${tooltip.data.height} ft`}
           </TooltipWithBounds>
-          <Tooltip
-            top={innerHeight + margin.top - 14}
-            left={tooltipLeft}
-            style={{
-              ...defaultStyles,
-              minWidth: 72,
-              textAlign: 'center',
-              transform: 'translateX(-50%)',
-            }}
-          >
-            {formatDate(getDate(tooltipData))}
+          <Tooltip top={innerHeight + margin.top - 14} left={tooltip.left} style={{ ...defaultStyles, minWidth: 72 }}>
+            {`${tooltip.data.time}`}
           </Tooltip>
         </div>
       )}
     </div>
   );
 }
-
-TimedGraph.propTypes = {
-  width: PropTypes.number.isRequired,
-  height: PropTypes.number.isRequired,
-  margin: PropTypes.shape({
-    top: PropTypes.number,
-    right: PropTypes.number,
-    bottom: PropTypes.number,
-    left: PropTypes.number,
-  }),
-  tooltipData: PropTypes.object,
-  tooltipLeft: PropTypes.number,
-  tooltipTop: PropTypes.number,
-  showTooltip: PropTypes.func.isRequired,
-  hideTooltip: PropTypes.func.isRequired,
-};
-
-export default withTooltip(TimedGraph);

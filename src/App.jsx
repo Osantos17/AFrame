@@ -1,10 +1,10 @@
-import { useState } from 'react';
+// import { useState, useEffect } from 'react';
 import { Header } from "./Header";
 import { Fetch } from "./Fetch";
 import { MapHome } from "/src/Location/MapHome.jsx";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { BottomNav } from "./BottomNav.jsx";
-import { LongForecast } from "/src/forecast/LongForecast.jsx";
+import { MultiDay } from "/src/forecast/MultiDay.jsx";
 import { ShortForecast } from "/src/forecast/ShortForecast.jsx";
 import { TideLongGraphPage } from "./forecast/TideLongGraphPage.jsx";
 import { TimedGraph } from "./forecast/TimedGraph.jsx";
@@ -12,56 +12,40 @@ import { withTooltip } from '@visx/tooltip';
 
 function App() {
   // Set initial size of the graph
-  const [graphWidth, setGraphWidth] = useState(600); // default width
-  const [graphHeight, setGraphHeight] = useState(400); // default height
 
-  // Manual resize handlers for graph size
-  const handleWidthChange = (e) => setGraphWidth(Number(e.target.value));
-  const handleHeightChange = (e) => setGraphHeight(Number(e.target.value));
+
+  // // Handle window resizing
+  // useEffect(() => {
+  //   const handleResize = () => {
+  //     setGraphWidth(window.innerWidth); // Maintain padding of 15px on each side
+  //   };
+    
+  //   window.addEventListener('resize', handleResize);
+    
+  //   // Cleanup the event listener on component unmount
+  //   return () => window.removeEventListener('resize', handleResize);
+  // }, []);
 
   // Wrapped TimedGraph with tooltip functionality
   const TimedGraphWithTooltip = withTooltip(TimedGraph);
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex-grow flex items-center justify-center bg-gray-100">
       <BrowserRouter>
         <Header />
-        <div className="flex-grow flex flex-col">
+        <div className="flex-grow"> {/* Makes the content area grow and take available space */}
           <Routes>
-            {/* Other routes remain unchanged */}
             <Route path="*" element={<MapHome />} />
             <Route path='/data' element={<Fetch />} />
-            <Route path='/results' element={<LongForecast />} />
+            <Route path='/results' element={<MultiDay />} />
             <Route path='/short' element={<ShortForecast />} />
             <Route path='/long' element={<TideLongGraphPage />} />
             
-            {/* Route for the TimedGraph chart */}
             <Route 
               path='/time' 
               element={
                 <div>
-                  {/* Manually adjust the size of the chart */}
-                  <div className="mb-4">
-                    <label>Width:</label>
-                    <input 
-                      type="number" 
-                      value={graphWidth} 
-                      onChange={handleWidthChange} 
-                      min="200" 
-                      max="1200" 
-                      className="mx-2"
-                    />
-                    <label>Height:</label>
-                    <input 
-                      type="number" 
-                      value={graphHeight} 
-                      onChange={handleHeightChange} 
-                      min="200" 
-                      max="800" 
-                      className="mx-2"
-                    />
-                  </div>
-                  <TimedGraphWithTooltip width={graphWidth} height={graphHeight} />
+                  <TimedGraphWithTooltip />
                 </div>
               }
             />

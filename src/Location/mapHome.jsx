@@ -17,26 +17,7 @@ export function MapHome() {
   const [zoomlevel, setZoomLevel] = useState(10);
   const [map, setMap] = useState(null);
   const [currentLocationMarker, setCurrentLocationMarker] = useState(null);
-  const [selectedLocationId, setSelectedLocationId] = useState(null); // State for selected location
-
-  // Function to find the closest location
-  const findClosestLocation = (userCoordinates, locations) => {
-    let closestLocation = null;
-    let closestDistance = Infinity;
-
-    locations.forEach(location => {
-      const distance = Math.sqrt(
-        Math.pow(location.latitude - userCoordinates.latitude, 2) +
-        Math.pow(location.longitude - userCoordinates.longitude, 2)
-      );
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestLocation = location;
-      }
-    });
-
-    return closestLocation;
-  };
+  const [selectedLocationId, setSelectedLocationId] = useState(null);
 
   useEffect(() => {
     Radar.initialize('prj_live_pk_de82543ab49a7a7b86fc1d55c635cf2af48357e3');
@@ -51,17 +32,7 @@ export function MapHome() {
   useEffect(() => {
     fetch('http://127.0.0.1:5000/locations')
       .then((response) => response.json())
-      .then((data) => {
-        setLocations(data);
-
-        // Set initial location as the closest to the user's coordinates
-        if (coordinates.latitude && coordinates.longitude) {
-          const closestLocation = findClosestLocation(coordinates, data);
-          if (closestLocation) {
-            setSelectedLocationId(closestLocation.id);
-          }
-        }
-      })
+      .then((data) => setLocations(data))
       .catch((error) => console.error('Error fetching locations:', error));
   }, [coordinates]);
 
@@ -102,15 +73,16 @@ export function MapHome() {
         map={map} 
         locations={locations} 
         zoomlevel={zoomlevel} 
-        onMarkerClick={(locationId) => {
-          setSelectedLocationId(locationId);
-          console.log('Selected Location ID in MapHome:', locationId); // Log selected ID
+        onMarkerClick={(location) => {
+          setSelectedLocationId(location.id);
+          map.easeTo({center: [location.longitude, location.latitude],
+            duration: 1100 // Transition duration in milliseconds (1000ms = 1 second)
+          });
+          console.log('Selected Location ID in MapHome:', location.id);
         }} 
       />
       {zoomlevel >= 10 && (
-        <>
-          <LocationDetails selectedLocationId={selectedLocationId} /> {/* Render LocationDetails */}
-        </>
+        <LocationDetails selectedLocationId={selectedLocationId} />
       )}
     </div>
   );

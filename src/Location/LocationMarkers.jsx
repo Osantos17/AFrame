@@ -17,7 +17,7 @@ export function LocationMarkers({ map, locations, zoomlevel, onMarkerClick }) {
             .addTo(map);
 
           marker.getElement().addEventListener('click', () => {
-            onMarkerClick(location.id); // Ensure the click function correctly passes the ID
+            onMarkerClick(location); // Pass the entire location object here
           });
 
           return marker;

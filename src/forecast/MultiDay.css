@@ -1,0 +1,18 @@
+html{
+  background-color: black;
+}
+
+body {
+  background-color: black; /* Change the background color of the entire screen */
+  margin: 0;
+  height: 100vh;
+}
+
+.graph-container {
+  display: flex;
+  background-color: black;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Fill the available screen height */
+  width: 100%;  /* Fill the available screen width */
+}
