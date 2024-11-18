@@ -30,7 +30,7 @@ export function TimedGraph({ graphData = [] }) {
   };
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/surf/1') // Replace with your API URL
+    fetch('http://127.0.0.1:5000/surf/1') 
       .then((response) => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -38,14 +38,14 @@ export function TimedGraph({ graphData = [] }) {
         return response.json();
       })
       .then((data) => {
-        console.log('Fetched data:', data); // Logs the fetched data
-        setData(data); // Set the fetched data in state
+        console.log('Fetched data:', data); 
+        setData(data); 
       })
       .catch((error) => {
-        console.error('Fetch error:', error); // Logs any fetch errors
+        console.error('Fetch error:', error); 
         setError(error.message);
       });
-  }, []); // Empty dependency array means this runs once when the component mounts
+  }, []); 
 
 
   useEffect(() => {
@@ -185,15 +185,25 @@ export function TimedGraph({ graphData = [] }) {
         </div>
       )}
 
-      {/* Render ForecastSingle component under the graph */}
       <div>
-      {/* Pass data to ForecastSingle component */}
-      {/* Render ForecastSingle components in a grid layout */}
-<div className="forecast-container grid grid-cols-6 gap-4 mt-5">
-  {[...Array(6).keys()].map((index) => (
-    <ForecastSingle key={index} data={data} rangeStart={index * 6} rangeEnd={(index + 1) * 3} />
+      <div className="forecast-container flex gap-0 mt-5 overflow-x-auto">
+  {[...Array(7)].map((_, index) => (
+    <div
+      key={index}
+      className={`flex-shrink-0 ${
+        index !== 6 ? 'border-r border-gray-700' : ''
+      }`}
+      style={{
+        width: `${innerWidth / 7}px`,
+      }}
+    >
+      <ForecastSingle data={data} rangeStart={index} rangeEnd={index} />
+    </div>
   ))}
 </div>
+
+
+
 
       
     </div>

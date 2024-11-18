@@ -22,12 +22,16 @@
   font-size: 10px;
 }
 
-.feet{
-  font-size: 10px;
+.waveCalc, .swellCalc, .time, .windSpeed, .time, .swell{
+  font-size: 14px;
 }
 
-.title{
-  font-size: 12px;
+.feet, .mph, .windDirection, .seconds, .swellDirection{
+  font-size: 9px;
+}
+
+.title, .pointDirection{
+  font-size: 10px;
 }
 
 .pointDirection{
