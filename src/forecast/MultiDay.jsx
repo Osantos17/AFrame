@@ -23,11 +23,11 @@ export function MultiDay() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5000/graph-points/1'); // Adjust endpoint as needed
+        const response = await fetch('http://127.0.0.1:5000/graph-points/2'); // Adjust endpoint as needed
         if (!response.ok) throw new Error(`Error: ${response.statusText}`);
 
         const json = await response.json();
-        console.log('Fetched 7-day data for location 1:', json);
+        console.log('Fetched 7-day data for location 2:', json);
 
         // Find the first "00:00" to determine start
         const startEntry = json.find((item) => item.graph_time === '00:00');

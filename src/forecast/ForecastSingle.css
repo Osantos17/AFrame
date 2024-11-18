@@ -1,4 +1,35 @@
-.ForecastContainer{
-  padding-top: 40px;
-  background-color: rgba(255, 255, 255, 0.227);
+.ForecastCol{
+  padding-top: 6px;
+  background-color: rgba(0, 0, 0, 0.227);
+  position: relative;
+}
+
+.swellCat {
+  z-index: 1; /* Set to a lower z-index but above background */
+}
+
+
+.vertical-text {
+  text-orientation: upright; /* Keep letters upright */
+}
+
+.vertical-text .letter {
+  margin: -4px 0; /* Reduce spacing between letters */
+  z-index: -1;
+}
+
+.degrees{
+  font-size: 10px;
+}
+
+.feet{
+  font-size: 10px;
+}
+
+.title{
+  font-size: 12px;
+}
+
+.pointDirection{
+  color: white;
 }

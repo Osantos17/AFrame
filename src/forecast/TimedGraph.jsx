@@ -8,6 +8,7 @@ import { localPoint } from '@visx/event';
 import { LinearGradient } from '@visx/gradient';
 import { max } from '@visx/vendor/d3-array';
 import './TimedGraph.css';
+import { ForecastSingle } from './ForecastSingle'; // Import ForecastSingle
 
 // Define custom tooltip styles
 const tooltipStyles = {
@@ -21,10 +22,32 @@ export function TimedGraph({ graphData = [] }) {
   const [tooltip, setTooltip] = useState({ visible: false, data: null, left: 0, top: 0 });
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const aspectRatio = 2;
+  const [data, setData] = useState(null); // State to store fetched data
+  const [error, setError] = useState(null); // State to store errors
 
   const handleResize = () => {
     setWindowWidth(window.innerWidth);
   };
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:5000/surf/1') // Replace with your API URL
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Fetched data:', data); // Logs the fetched data
+        setData(data); // Set the fetched data in state
+      })
+      .catch((error) => {
+        console.error('Fetch error:', error); // Logs any fetch errors
+        setError(error.message);
+      });
+  }, []); // Empty dependency array means this runs once when the component mounts
+
+
   useEffect(() => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -161,6 +184,21 @@ export function TimedGraph({ graphData = [] }) {
           </Tooltip>
         </div>
       )}
+
+      {/* Render ForecastSingle component under the graph */}
+      <div>
+      {/* Pass data to ForecastSingle component */}
+      {/* Render ForecastSingle components in a grid layout */}
+<div className="forecast-container grid grid-cols-6 gap-4 mt-5">
+  {[...Array(6).keys()].map((index) => (
+    <ForecastSingle key={index} data={data} rangeStart={index * 6} rangeEnd={(index + 1) * 3} />
+  ))}
+</div>
+
+      
     </div>
+    </div>
+
+    
   );
 }
