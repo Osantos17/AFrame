@@ -29,7 +29,7 @@ function App() {
   const GraphContainerWithTooltip = withTooltip(GraphContainer);
 
   return (
-    <div className="flex-grow flex items-center justify-center bg-gray-100">
+    <div className="app-background flex-grow flex items-center justify-center ">
       <BrowserRouter>
         <Header />
         <div className="flex-grow"> {/* Makes the content area grow and take available space */}

@@ -60,7 +60,7 @@ export function LocationDetails({ selectedLocationId }) {
   }, surfDataForFirstDate[0]);
 
   return (
-    <div className='rounded-xl shadow-lg flex items-center'>
+    <div className='rounded-xl shadow-lg flex items-center text-white'>
       <div>
         <h3>{locationDetails.location_name}</h3>
         <h3>{formattedDate}</h3>

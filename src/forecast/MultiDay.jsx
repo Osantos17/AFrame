@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { GraphContainer } from './GraphContainer.jsx';
 import { ForecastSingle } from "./ForecastSingle.jsx";
 import './Multiday.css';
+import WindCalcs from '/src/calcs/WindCalcs.jsx';
 
 export function MultiDay() {
   const { locationId } = useParams();
@@ -56,7 +57,6 @@ export function MultiDay() {
       });
   }, [locationId]);
 
-  // Fetch surf data
   useEffect(() => {
     setIsLoading(true);
     fetch(`http://127.0.0.1:5000/surf/${locationId}`)
@@ -69,8 +69,12 @@ export function MultiDay() {
         const day1 = data.slice(0, 7);
         const day2 = data.slice(7, 14);
         const day3 = data.slice(14, 21);
-
+  
         setData([day1, day2, day3]);
+  
+        // Call logWindDirection to log all wind directions
+        WindCalcs.logWindDirection(data);  // Pass the fetched data to logWindDirection
+  
         setIsLoading(false);
       })
       .catch((error) => {
@@ -78,6 +82,7 @@ export function MultiDay() {
         setIsLoading(false);
       });
   }, [locationId]);
+  
 
   // Fetch graph data
   useEffect(() => {
@@ -155,7 +160,7 @@ export function MultiDay() {
       
       // After navigating, remove the transitioning class to reset state
       container.classList.remove('transitioning');
-    }, 500); // Wait for the fade effect duration (500ms in this case)
+    }, 600); // Wait for the fade effect duration (500ms in this case)
   };
 
   return (

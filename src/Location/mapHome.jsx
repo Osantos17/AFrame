@@ -7,7 +7,7 @@ import { LocationMarkers } from './LocationMarkers';
 import { LocationDetails } from './LocationDetails';
 
 const MapContainer = styled.div`
-  height: ${({ $zoomlevel }) => ($zoomlevel >= 10 ? 'calc(100vh - 120px - 80px)' : 'calc(100vh - 120px)')};
+  height: ${({ $zoomlevel }) => ($zoomlevel >= 10 ? 'calc(100vh - 120px - 80px)' : 'calc(100vh - 60px)')};
   width: 100%;
 `;
 
@@ -65,7 +65,7 @@ export function MapHome() {
   }, [coordinates, locations, map]);
 
   return (
-    <div className="radar-map-page flex flex-col h-full">
+    <div className="radar-map-page flex flex-col h-full ">
       <MapContainer $zoomlevel={zoomlevel}>
         <div id="map" className='h-full w-full'></div>
       </MapContainer>

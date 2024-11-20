@@ -1,5 +1,6 @@
 import './ForecastSingle.css';
 
+
 export function ForecastSingle({ time, swelldir, swelldir16point, swellHeight_ft, swellperiod_secs, windspeedMiles, winddirDegree, winddir16point }) {
   return (
     <div className="ForecastCol">
