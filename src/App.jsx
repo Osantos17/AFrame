@@ -5,9 +5,7 @@ import { MapHome } from "/src/Location/MapHome.jsx";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { BottomNav } from "./BottomNav.jsx";
 import { MultiDay } from "/src/forecast/MultiDay.jsx";
-import { ShortForecast } from "/src/forecast/ShortForecast.jsx";
-import { TideLongGraphPage } from "./forecast/TideLongGraphPage.jsx";
-import { TimedGraph } from "./forecast/TimedGraph.jsx";
+import { GraphContainer } from "./forecast/GraphContainer.jsx";
 import { ForecastSingle } from "./forecast/ForecastSingle.jsx";
 import { withTooltip } from '@visx/tooltip';
 
@@ -27,8 +25,8 @@ function App() {
   //   return () => window.removeEventListener('resize', handleResize);
   // }, []);
 
-  // Wrapped TimedGraph with tooltip functionality
-  const TimedGraphWithTooltip = withTooltip(TimedGraph);
+  // Wrapped GraphContainer with tooltip functionality
+  const GraphContainerWithTooltip = withTooltip(GraphContainer);
 
   return (
     <div className="flex-grow flex items-center justify-center bg-gray-100">
@@ -38,16 +36,14 @@ function App() {
           <Routes>
             <Route path="*" element={<MapHome />} />
             <Route path='/data' element={<Fetch />} />
-            <Route path='/results' element={<MultiDay />} />
-            <Route path='/short' element={<ShortForecast />} />
-            <Route path='/long' element={<TideLongGraphPage />} />
+            <Route path="/results/:locationId" element={<MultiDay />} />
             <Route path='/single' element={<ForecastSingle />} />
             
             <Route 
               path='/time' 
               element={
                 <div>
-                  <TimedGraphWithTooltip />
+                  <GraphContainerWithTooltip />
                 </div>
               }
             />

@@ -5,7 +5,7 @@ export function Header() {
     <header>
       <div className="title_border">
         <div className='logo'>
-          <img src="./src/Images/LogoWhiteTrans.png" width="40" height="40"/>
+          <img src="/src/Images/LogoWhiteTrans.png" width="40" height="40"/>
         </div>
       </div>
     </header>

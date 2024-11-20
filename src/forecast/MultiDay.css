@@ -1,22 +1,43 @@
-html{
-  background-color: black;
-}
-
+/* Remove transition on body */
 body {
-  background-color: black; /* Change the background color of the entire screen */
+  background-color: black;
   margin: 0;
   height: 100vh;
 }
 
-.multiday-container{
+/* Ensure the background color stays black */
+.multiday-container {
+  padding-top: 40px;
   padding-bottom: 30px;
+  background-color: black; /* Ensure background is always black */
+  position: relative;
+  transition: opacity 0.5s ease-out; /* Smooth transition for content fade */
 }
 
+/* Add transition class that reduces opacity */
+.multiday-container.transitioning {
+  opacity: .03; /* Fade out content */
+}
+
+/* Keep other styles the same */
 .graph-container {
-  background-color: black;
-  justify-content: center;
-  align-items: center;
+  padding-top: 20px;
+  background-color: black; /* Ensure graph container stays black */
   height: 100%;
-  width: 100%; 
-  padding-top: 30px; 
+  width: 100%;
+}
+
+.text-left, .text-right {
+  font-size: 10px;
+}
+
+.tooltip {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+  pointer-events: none;
 }

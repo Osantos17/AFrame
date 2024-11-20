@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react';
-import { TimedGraph } from './TimedGraph';
+import { useParams, useNavigate } from 'react-router-dom';
+import { GraphContainer } from './GraphContainer.jsx';
 import { ForecastSingle } from "./ForecastSingle.jsx";
 import './Multiday.css';
 
 export function MultiDay() {
+  const { locationId } = useParams();
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [graphData, setGraphData] = useState([]);
   const [tooltip, setTooltip] = useState({ visible: false, content: '', x: 0, y: 0 });
-  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [isLoading, setIsLoading] = useState(true);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [locationName, setLocationName] = useState('');
+  const [locations, setLocations] = useState([]);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -16,27 +21,78 @@ export function MultiDay() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Calculate size based on window width (for example, 80% of the width)
   const graphWidth = windowWidth * 0.8;
-  const graphHeight = graphWidth / 1; // Adjust the aspect ratio as needed
+  const graphHeight = graphWidth / 1;
 
+  // Fetch locations data
+  useEffect(() => {
+    fetch('http://127.0.0.1:5000/locations') 
+      .then((response) => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Fetched locations:', data);  // Log locations data
+        setLocations(data);
+      })
+      .catch((error) => {
+        console.error('Error fetching locations:', error);
+      });
+  }, []);
+
+  // Fetch location name
+  useEffect(() => {
+    fetch(`http://127.0.0.1:5000/locations/${locationId}`)
+      .then((response) => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Fetched location name:', data);  // Log location name
+        setLocationName(data.location_name);
+      })
+      .catch((error) => {
+        console.error('Error fetching location name:', error);
+      });
+  }, [locationId]);
+
+  // Fetch surf data
+  useEffect(() => {
+    setIsLoading(true);
+    fetch(`http://127.0.0.1:5000/surf/${locationId}`)
+      .then((response) => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Fetched surf data:', data);  // Log surf data
+        const day1 = data.slice(0, 7);
+        const day2 = data.slice(7, 14);
+        const day3 = data.slice(14, 21);
+
+        setData([day1, day2, day3]);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error('Fetch error:', error);
+        setIsLoading(false);
+      });
+  }, [locationId]);
+
+  // Fetch graph data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5000/graph-points/2'); // Adjust endpoint as needed
+        const response = await fetch(`http://127.0.0.1:5000/graph-points/${locationId}`);
         if (!response.ok) throw new Error(`Error: ${response.statusText}`);
 
         const json = await response.json();
-        console.log('Fetched 7-day data for location 2:', json);
-
-        // Find the first "00:00" to determine start
+        console.log('Fetched graph data:', json);  // Log graph data
+        
         const startEntry = json.find((item) => item.graph_time === '00:00');
         const startId = startEntry ? startEntry.id : null;
 
-        // Filter starting from "00:00"
         const filteredData = startId ? json.filter((item) => item.id >= startId) : json;
-
-        // Split data into daily chunks
         const graphDataChunks = [];
         let currentChunk = [];
 
@@ -52,24 +108,20 @@ export function MultiDay() {
           graphDataChunks.push(currentChunk);
         }
 
-        // Filter to hourly entries only (this ensures that only hourly data is considered)
         const filteredGraphDataChunks = graphDataChunks.map((chunk) =>
           chunk.filter((item) => item.graph_time.slice(3) === '00')
         );
 
-        console.log('Filtered graph data chunks:', filteredGraphDataChunks);
-
-        setData(filteredData);
         setGraphData(filteredGraphDataChunks);
-        setIsLoading(false); // Set loading state to false after fetching data
+        setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching 7-day data:', error);
-        setIsLoading(false); // Ensure loading state is false on error
+        console.error('Error fetching graph data:', error);
+        setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [locationId]);
 
   // Tooltip Handlers
   const handleMouseEnter = (event, dataPoint) => {
@@ -86,49 +138,87 @@ export function MultiDay() {
     setTooltip({ ...tooltip, visible: false });
   };
 
-  // Render each day's graph
-  const renderGraph = (dayData, index) => {
-    if (!dayData || dayData.length === 0) {
-      return <p key={index}>No data available for Day {index + 1}</p>;
-    }
+  // Find neighboring locations
+  const currentIndex = locations.findIndex((loc) => loc.id === parseInt(locationId));
+  const leftLocation = locations[currentIndex - 1];
+  const rightLocation = locations[currentIndex + 1];
 
-    return (
-      <div key={index} style={{ marginBottom: '30px' }}>
-        <div >
-          <TimedGraph
-            width={800}
-            height={400}
-            graphData={dayData}
-            handleMouseEnter={handleMouseEnter} // Pass tooltip handlers
-            handleMouseLeave={handleMouseLeave}
-          />
-        </div>
-      </div>
-    );
+  // Handle location change
+  const handleLocationChange = (newLocationId) => {
+    // Add the transitioning class to the container to trigger fade effect
+    const container = document.querySelector('.multiday-container');
+    container.classList.add('transitioning');
+  
+    // Wait for the transition to finish, then navigate
+    setTimeout(() => {
+      navigate(`/results/${newLocationId}`);
+      
+      // After navigating, remove the transitioning class to reset state
+      container.classList.remove('transitioning');
+    }, 500); // Wait for the fade effect duration (500ms in this case)
   };
 
   return (
-    <div className="multiday-container flex flex-col items-center justify-center">
-      <div className="multiday-container">
-      <div className="graph-wrapper ">
-        {isLoading ? (
-          <p>Loading...</p>
+    <div className="multiday-container bg-black mb-10">
+      <div className="location-names grid grid-cols-3 justify-items-stretch mt-8">
+        {leftLocation ? (
+          <button
+            onClick={() => handleLocationChange(leftLocation.id)} 
+            className="text-left justify-self-start text-gray-600 uppercase ml-5"
+          >
+            {leftLocation.location_name}-
+          </button>
         ) : (
-          graphData.map((dayData, index) => (
-            <div key={index} className="graph-container ">
-              <TimedGraph
-                width={graphWidth}  // Pass the calculated width
-                height={graphHeight}  // Pass the calculated height
-                graphData={dayData}
-                handleMouseEnter={handleMouseEnter}
-                handleMouseLeave={handleMouseLeave}
-              />
-            </div>
-          ))
+          <div className="w-1/4"></div>
         )}
-        < ForecastSingle/>
+        {locationName && (
+          <h1 className="locationName justify-self-center w-max text-gray-300 uppercase">
+            -{locationName}-
+          </h1>
+        )}
+        {rightLocation ? (
+          <button
+            onClick={() => handleLocationChange(rightLocation.id)} 
+            className="text-right justify-self-end text-gray-600 uppercase mr-5"
+          >
+            -{rightLocation.location_name}
+          </button>
+        ) : (
+          <div className="w-1/4"></div>
+        )}
       </div>
-      </div>
+      {isLoading ? (
+        <p>Loading data...</p>
+      ) : (
+        <div className="graph-wrapper">
+          {graphData.map((dayData, index) => (
+            <div key={index}>
+              <div className="graph-container">
+                <GraphContainer
+                  width={graphWidth}
+                  height={graphHeight}
+                  graphData={dayData}
+                  handleMouseEnter={handleMouseEnter}
+                  handleMouseLeave={handleMouseLeave}
+                />
+              </div>
+              <div className="forecast-container flex justify-center mt-5 overflow-x-auto space-x-1">
+                {data[index]?.map((forecast, idx) => (
+                  <div
+                    key={idx}
+                    className={`${idx !== 6 ? 'border-r border-gray-700' : ''}`}
+                    style={{
+                      width: `${windowWidth / 8}px`,
+                    }}
+                  >
+                    <ForecastSingle {...forecast} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {tooltip.visible && (
         <div
           style={{

@@ -1,3 +1,7 @@
+body{
+  background-color: black;
+}
+
 .ForecastCol{
   padding-top: 6px;
   background-color: rgba(0, 0, 0, 0.227);

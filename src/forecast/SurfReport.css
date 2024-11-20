@@ -1,7 +1,7 @@
 .surfcontainer {
   height: 80px;
   background-color: rgb(36, 57, 70);
-  color: white;
+  background-color: black;
   display: flex;
   justify-content: center;
   align-items: center;
