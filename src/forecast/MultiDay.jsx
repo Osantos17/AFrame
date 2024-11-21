@@ -15,6 +15,7 @@ export function MultiDay() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [locationName, setLocationName] = useState('');
   const [locations, setLocations] = useState([]);
+  
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -41,7 +42,6 @@ export function MultiDay() {
       });
   }, []);
 
-  // Fetch location name
   useEffect(() => {
     fetch(`http://127.0.0.1:5000/locations/${locationId}`)
       .then((response) => {
@@ -49,8 +49,11 @@ export function MultiDay() {
         return response.json();
       })
       .then((data) => {
-        console.log('Fetched location name:', data);  // Log location name
+        console.log('Fetched location name:', data);
         setLocationName(data.location_name);
+        
+        // Log the wind directions using WindCalcs
+        WindCalcs.logWindDirections(data);  // Pass the location data to logWindDirections
       })
       .catch((error) => {
         console.error('Error fetching location name:', error);
@@ -72,8 +75,7 @@ export function MultiDay() {
   
         setData([day1, day2, day3]);
   
-        // Call logWindDirection to log all wind directions
-        WindCalcs.logWindDirection(data);  // Pass the fetched data to logWindDirection
+        WindCalcs.logWindDirection(data);
   
         setIsLoading(false);
       })
