@@ -53,7 +53,7 @@ export function MultiDay() {
         setLocationName(data.location_name);
         
         // Log the wind directions using WindCalcs
-        WindCalcs.logWindDirections(data);  // Pass the location data to logWindDirections
+        WindCalcs.logWindDirections(data);
       })
       .catch((error) => {
         console.error('Error fetching location name:', error);
@@ -67,24 +67,37 @@ export function MultiDay() {
         if (!response.ok) throw new Error('Network response was not ok');
         return response.json();
       })
-      .then((data) => {
-        console.log('Fetched surf data:', data);  // Log surf data
-        const day1 = data.slice(0, 7);
-        const day2 = data.slice(7, 14);
-        const day3 = data.slice(14, 21);
+      .then((surfData) => {
+        console.log('Fetched surf data:', surfData);
   
-        setData([day1, day2, day3]);
+        // Fetch location data to calculate wind matches
+        fetch(`http://127.0.0.1:5000/locations/${locationId}`)
+          .then((response) => response.json())
+          .then((locationData) => {
+            console.log('Fetched location data:', locationData);
   
-        WindCalcs.logWindDirection(data);
+            // Calculate wind direction matches
+            const windDirectionMatches = WindCalcs.windDirections(surfData, locationData);
+            const enrichedSurfData = surfData.map((data, index) => ({
+              ...data,
+              windDirectionMatch: windDirectionMatches[index],
+            }));
   
-        setIsLoading(false);
+            // Slice data into days and set enriched data
+            const day1 = enrichedSurfData.slice(0, 7);
+            const day2 = enrichedSurfData.slice(7, 14);
+            const day3 = enrichedSurfData.slice(14, 21);
+  
+            setData([day1, day2, day3]);
+            setIsLoading(false);
+          })
+          .catch((error) => console.error('Error fetching location data:', error));
       })
       .catch((error) => {
         console.error('Fetch error:', error);
         setIsLoading(false);
       });
   }, [locationId]);
-  
 
   // Fetch graph data
   useEffect(() => {
@@ -210,18 +223,23 @@ export function MultiDay() {
                 />
               </div>
               <div className="forecast-container flex justify-center mt-5 overflow-x-auto space-x-1">
-                {data[index]?.map((forecast, idx) => (
-                  <div
-                    key={idx}
-                    className={`${idx !== 6 ? 'border-r border-gray-700' : ''}`}
-                    style={{
-                      width: `${windowWidth / 8}px`,
-                    }}
-                  >
-                    <ForecastSingle {...forecast} />
-                  </div>
-                ))}
-              </div>
+  {data[index]?.map((forecast, idx) => (
+    <div
+      key={idx}
+      className={`${idx !== 6 ? 'border-r border-gray-700' : ''}`}
+      style={{
+        width: `${windowWidth / 8}px`,
+      }}
+    >
+      <ForecastSingle
+        key={forecast.id}
+        {...forecast}
+        windDirectionMatch={forecast.windDirectionMatch}
+      />
+    </div>
+  ))}
+</div>
+
             </div>
           ))}
         </div>

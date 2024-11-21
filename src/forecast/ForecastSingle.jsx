@@ -1,7 +1,8 @@
 import './ForecastSingle.css';
 
 
-export function ForecastSingle({ time, swelldir, swelldir16point, swellHeight_ft, swellperiod_secs, windspeedMiles, winddirDegree, winddir16point }) {
+
+export function ForecastSingle({ time, swelldir, swelldir16point, swellHeight_ft, swellperiod_secs, windspeedMiles, winddirDegree, winddir16point, windDirectionMatch }) {
   return (
     <div className="ForecastCol">
       <div className="Forecastcontainer flex flex-col items-center space-y-1 relative">
@@ -58,7 +59,9 @@ export function ForecastSingle({ time, swelldir, swelldir16point, swellHeight_ft
           <div className="windLogo flex flex-col items-center mt-1">
           <img
             src={
-              (windspeedMiles && windspeedMiles < 5)
+              windDirectionMatch
+                ? '/src/Images/GreenWindArrow.png'
+                : (windspeedMiles && windspeedMiles < 5)
                 ? '/src/Images/GreenWindArrow.png'
                 : (windspeedMiles && windspeedMiles <= 8)
                 ? '/src/Images/YellowWindArrow.png'
@@ -71,7 +74,7 @@ export function ForecastSingle({ time, swelldir, swelldir16point, swellHeight_ft
               transform: `rotate(${(winddirDegree || 0) + 180}deg)`,
             }}
           />
-          </div>
+        </div>
           <div className="windDirection degrees text-gray-500 mt-1">{winddirDegree || 'N/A'}</div>
           <div className="pointDirection">{winddir16point || 'N/A'}</div>
         </div>
