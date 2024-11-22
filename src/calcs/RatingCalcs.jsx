@@ -97,12 +97,60 @@ const swellDirections = (surfData, locationData) => {
   return results;
 };
 
+const calculateWaveHeight = (swellHeights, waveFactor) => {
+  // Calculate wave heights based on swell heights and wave factor
+  const waveHeights = swellHeights.map((height) => {
+    // Step 1: Divide the swell height by the wave factor
+    let result = (height / waveFactor).toFixed(1); // Rounded to the nearest 10th
+    
+    // Step 2: Check the decimal place
+    const decimalPart = result.split('.')[1];
+
+    // Step 3: Determine the range for the wave height
+    let waveHeightRange = '';
+
+    // Check if result has a decimal place (tens decimal place exists)
+    if (decimalPart !== undefined) {
+      const tensDecimalPlace = parseInt(decimalPart[0]); // Extract the tens place of the decimal
+      
+      // Apply new logic for numbers with decimal places
+      if (tensDecimalPlace < 5) {
+        // If tens decimal place is less than 5, keep the whole number and add '+'
+        const lower = Math.floor(result);
+        waveHeightRange = `${lower} +`;
+      } else {
+        // If tens decimal place is 5 or greater, round up and add '+'
+        const lower = Math.floor(result);
+        const upper = lower + 1;
+        waveHeightRange = `${upper} +`;
+      }
+    } else {
+      // Apply original logic for whole numbers or numbers without decimal places
+      const wholeResult = parseFloat(result);
+      const lower = Math.floor(wholeResult);
+      const upper = Math.ceil(wholeResult);
+      if (wholeResult - lower > 0.4) {
+        // If the difference between whole and decimal part is more than 0.4, add range
+        waveHeightRange = `${lower}-${upper}`;
+      } else {
+        // Otherwise, use the '+'
+        waveHeightRange = `${lower}-${upper}+`;
+      }
+    }
+
+    return waveHeightRange;
+  });
+
+  return waveHeights;
+};
+
 
 const RatingCalcs = {
   logWindDirections,
   logWindDirection,
   windDirections,
-  swellDirections
+  swellDirections,
+  calculateWaveHeight,
 };
 
 export default RatingCalcs;

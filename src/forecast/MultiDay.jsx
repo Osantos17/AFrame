@@ -5,6 +5,7 @@ import { ForecastSingle } from "./ForecastSingle.jsx";
 import './Multiday.css';
 import RatingCalcs from '/src/calcs/RatingCalcs.jsx';
 
+
 export function MultiDay() {
   const { locationId } = useParams();
   const navigate = useNavigate();
@@ -15,6 +16,12 @@ export function MultiDay() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [locationName, setLocationName] = useState('');
   const [locations, setLocations] = useState([]);
+  const [swellHeights, setSwellHeights] = useState([]);
+  const [waveFactor, setWaveFactor] = useState([]);
+  const [calculatedWaveHeights, setCalculatedWaveHeights] = useState([]);
+  const [waveHeightGroup, setWaveHeightGroup] = useState([]);
+
+  
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -50,6 +57,7 @@ export function MultiDay() {
       .then((data) => {
         console.log('Fetched location name:', data);
         setLocationName(data.location_name);
+        setWaveFactor(data.wavecalc);
   
         // Log all swell-related values together
         const swellRange = {
@@ -68,47 +76,63 @@ export function MultiDay() {
       });
   }, [locationId]);
   
+  useEffect(() => {
+    if (swellHeights.length > 0 && waveFactor) {
+      // Use RatingCalcs to calculate wave height
+      const waveHeights = RatingCalcs.calculateWaveHeight(swellHeights, waveFactor);
+      console.log('Calculated Wave Heights:', waveHeights);
+    }
+  }, [swellHeights, waveFactor]);
   
 
   useEffect(() => {
-  if (!locationId) return;
-
-  fetch(`http://127.0.0.1:5000/surf/${locationId}`)
-    .then((response) => response.json())
-    .then((surfData) => {
-      console.log('Fetched surf data:', surfData);
-
-      fetch(`http://127.0.0.1:5000/locations/${locationId}`)
-        .then((response) => response.json())
-        .then((locationData) => {
-          console.log('Fetched location data:', locationData);
-
-          const windDirectionMatches = RatingCalcs.windDirections(surfData, locationData);
-          const swellDirectionMatches = RatingCalcs.swellDirections(surfData, locationData);
-
-          const enrichedSurfData = surfData.map((data, index) => ({
-            ...data,
-            windDirectionMatch: windDirectionMatches[index],
-            swellDirectionMatch: swellDirectionMatches[index],
-          }));
-
-          console.log('Data_surf with Swell Direction Matches:', enrichedSurfData);
-
-          const day1 = enrichedSurfData.slice(0, 7);
-          const day2 = enrichedSurfData.slice(7, 14);
-          const day3 = enrichedSurfData.slice(14, 21);
-
-          setData([day1, day2, day3]);
-          setIsLoading(false);
-        })
-        .catch((error) => console.error('Error fetching location data:', error));
-    })
-    .catch((error) => {
-      console.error('Fetch error:', error);
-      setIsLoading(false);
-    });
-}, [locationId]);
-
+    if (!locationId) return;
+  
+    Promise.all([
+      fetch(`http://127.0.0.1:5000/surf/${locationId}`).then((res) => res.json()),
+      fetch(`http://127.0.0.1:5000/locations/${locationId}`).then((res) => res.json()),
+    ])
+      .then(([surfData, locationData]) => {
+        console.log('Fetched surf data:', surfData);
+        console.log('Fetched location data:', locationData);
+  
+        setSwellHeights(surfData.map((data) => data.swellHeight_ft));
+        setWaveFactor(locationData.wavecalc);
+  
+        const windDirectionMatches = RatingCalcs.windDirections(surfData, locationData);
+        const swellDirectionMatches = RatingCalcs.swellDirections(surfData, locationData);
+  
+        const enrichedSurfData = surfData.map((data, index) => ({
+          ...data,
+          windDirectionMatch: windDirectionMatches[index],
+          swellDirectionMatch: swellDirectionMatches[index],
+        }));
+  
+        const chunkedData = [
+          enrichedSurfData.slice(0, 7),
+          enrichedSurfData.slice(7, 14),
+          enrichedSurfData.slice(14, 21),
+        ];
+        setData(chunkedData);
+        setIsLoading(false);
+        
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+        setIsLoading(false);
+      });
+  }, [locationId]);
+  
+  
+  useEffect(() => {
+    if (swellHeights.length > 0 && waveFactor) {
+      // Use RatingCalcs to calculate wave height
+      const waveHeights = RatingCalcs.calculateWaveHeight(swellHeights, waveFactor);
+      console.log('Calculated Wave Heights:', waveHeights);
+      setCalculatedWaveHeights(waveHeights); // Set the calculated wave heights
+    }
+  }, [swellHeights, waveFactor]);
+  
   
 
   useEffect(() => {
@@ -182,9 +206,23 @@ export function MultiDay() {
     }, 600);
   };
 
+  useEffect(() => {
+    if (calculatedWaveHeights.length > 0) {
+      const groupedWaveHeights = [
+        calculatedWaveHeights.slice(0, 7),    // First day
+        calculatedWaveHeights.slice(7, 14),  // Second day
+        calculatedWaveHeights.slice(14, 21), // Third day
+      ];
+      setWaveHeightGroup(groupedWaveHeights); // Update state
+      console.log('WaveHeightGroup:', groupedWaveHeights);
+    }
+  }, [calculatedWaveHeights]);
+  
+  
+
   return (
     <div className="multiday-container bg-black mb-10">
-      <div className="location-names grid grid-cols-3 justify-items-stretch mt-8">
+      <div className="location-names grid grid-cols-3 justify-items-stretch mt-14">
         {leftLocation ? (
           <button
             onClick={() => handleLocationChange(leftLocation.id)}
@@ -227,21 +265,23 @@ export function MultiDay() {
                 />
               </div>
               <div className="forecast-container flex justify-center mt-5 overflow-x-auto space-x-1">
-                {data[index]?.map((forecast, idx) => (
-                  <div
-                    key={idx}
-                    className={`${idx !== 6 ? 'border-r border-gray-700' : ''}`}
-                    style={{
-                      width: `${windowWidth / 8}px`,
-                    }}
-                  >
-                    <ForecastSingle
-                      key={forecast.id}
-                      {...forecast}
-                      windDirectionMatch={forecast.windDirectionMatch}
-                    />
-                  </div>
-                ))}
+              {data[index]?.map((forecast, idx) => (
+                <div
+                  key={idx}
+                  className={`${idx !== 21 ? 'border-r border-gray-700' : ''}`}
+                  style={{
+                    width: `${windowWidth / 8}px`,
+                  }}
+                >
+                  
+                  <ForecastSingle
+                    key={forecast.id}
+                    {...forecast}
+                    windDirectionMatch={forecast.windDirectionMatch}
+                    waveHeight={waveHeightGroup[index]?.[idx]}
+                  />
+                </div>
+              ))}
               </div>
             </div>
           ))}
