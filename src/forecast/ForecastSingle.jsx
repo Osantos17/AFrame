@@ -1,15 +1,41 @@
 import './ForecastSingle.css';
 
+export function ForecastSingle({ 
+  time, 
+  swelldir, 
+  swelldir16point, 
+  swellHeight_ft, 
+  swellperiod_secs, 
+  windspeedMiles, 
+  winddirDegree, 
+  winddir16point, 
+  windDirectionMatch, 
+  swellDirectionMatch,
+}) {
+
+  const getSwellArrow = () => {
+    if (swellDirectionMatch?.isInPreferredRange) {
+      return '/src/Images/SwellGreenArrow.png';
+    } else if (swellDirectionMatch?.isInBadRange) {
+      return '/src/Images/SwellRedArrow.png';
+    }
+    return '/src/Images/SwellBlueArrow.png';
+  };
 
 
-export function ForecastSingle({ time, swelldir, swelldir16point, swellHeight_ft, swellperiod_secs, windspeedMiles, winddirDegree, winddir16point, windDirectionMatch }) {
   return (
     <div className="ForecastCol">
       <div className="Forecastcontainer flex flex-col items-center space-y-1 relative">
-        <div className="border-t border-gray-400 w-10 ml-0"></div>
+        <div className="RatingBar flex flex-col items-center mt-[-10px]">
+          <img 
+            src={'/src/Images/RatingGreen.png'}
+            width="40"
+            height="20"
+          />
+        </div>
         <div className="timeWaveContainer">
-          <div className="time flex flex-col items-center text-white mb-1">
-            {time ? parseInt(time, 10) / 100 : 'N/A'}
+          <div className="time flex flex-col items-center text-white mt-[-6px] mb-1">
+          {time ? (parseInt(time, 10) / 100) % 12 || 12 : 'N/A'}
           </div>
           <div className="waveHeight mb-1">
             <div className="swellHeight flex items-center space-x-0.5 ml-2 mt-.5">
@@ -24,8 +50,8 @@ export function ForecastSingle({ time, swelldir, swelldir16point, swellHeight_ft
             <div className="title items-center text-gray-300 ml-0 pb-1">SWELL</div>
           </div>
           <div className="swellLogo mt-0 flex flex-col items-center">
-            <img
-              src="/src/Images/SwellArrow.png"
+          <img
+              src={getSwellArrow()}
               width="20"
               height="20"
               alt="Swell Arrow"
@@ -57,24 +83,24 @@ export function ForecastSingle({ time, swelldir, swelldir16point, swellHeight_ft
             <div className="mph text-gray-500 mt-[-2px]">mph</div>
           </div>
           <div className="windLogo flex flex-col items-center mt-1">
-          <img
-            src={
-              windDirectionMatch
-                ? '/src/Images/GreenWindArrow.png'
-                : (windspeedMiles && windspeedMiles < 5)
-                ? '/src/Images/GreenWindArrow.png'
-                : (windspeedMiles && windspeedMiles <= 8)
-                ? '/src/Images/YellowWindArrow.png'
-                : '/src/Images/RedWindArrow.png'
-            }
-            width="20"
-            height="20"
-            alt="Wind Arrow"
-            style={{
-              transform: `rotate(${(winddirDegree || 0) + 180}deg)`,
-            }}
-          />
-        </div>
+            <img
+              src={
+                windDirectionMatch
+                  ? '/src/Images/GreenWindArrow.png'
+                  : (windspeedMiles && windspeedMiles < 5)
+                  ? '/src/Images/GreenWindArrow.png'
+                  : (windspeedMiles && windspeedMiles <= 8)
+                  ? '/src/Images/YellowWindArrow.png'
+                  : '/src/Images/RedWindArrow.png'
+              }
+              width="20"
+              height="20"
+              alt="Wind Arrow"
+              style={{
+                transform: `rotate(${(winddirDegree || 0) + 180}deg)`,
+              }}
+            />
+          </div>
           <div className="windDirection degrees text-gray-500 mt-1">{winddirDegree || 'N/A'}</div>
           <div className="pointDirection">{winddir16point || 'N/A'}</div>
         </div>

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { GraphContainer } from './GraphContainer.jsx';
 import { ForecastSingle } from "./ForecastSingle.jsx";
 import './Multiday.css';
-import WindCalcs from '/src/calcs/WindCalcs.jsx';
+import RatingCalcs from '/src/calcs/RatingCalcs.jsx';
 
 export function MultiDay() {
   const { locationId } = useParams();
@@ -15,7 +15,6 @@ export function MultiDay() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [locationName, setLocationName] = useState('');
   const [locations, setLocations] = useState([]);
-  
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -34,7 +33,7 @@ export function MultiDay() {
         return response.json();
       })
       .then((data) => {
-        console.log('Fetched locations:', data);  // Log locations data
+        console.log('Fetched locations:', data);
         setLocations(data);
       })
       .catch((error) => {
@@ -51,55 +50,67 @@ export function MultiDay() {
       .then((data) => {
         console.log('Fetched location name:', data);
         setLocationName(data.location_name);
-        
-        // Log the wind directions using WindCalcs
-        WindCalcs.logWindDirections(data);
+  
+        // Log all swell-related values together
+        const swellRange = {
+          bad_swell_dir_max: data.bad_swell_dir_max,
+          bad_swell_dir_min: data.bad_swell_dir_min,
+          preferred_swell_dir_min: data.preferred_swell_dir_min,
+          preferred_swell_dir_max: data.preferred_swell_dir_max,
+        };
+        console.log('Swell Range:', swellRange);
+  
+        // Optionally, log wind directions using RatingCalcs
+        RatingCalcs.logWindDirections(data);
       })
       .catch((error) => {
         console.error('Error fetching location name:', error);
       });
   }, [locationId]);
+  
+  
 
   useEffect(() => {
-    setIsLoading(true);
-    fetch(`http://127.0.0.1:5000/surf/${locationId}`)
-      .then((response) => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.json();
-      })
-      .then((surfData) => {
-        console.log('Fetched surf data:', surfData);
-  
-        // Fetch location data to calculate wind matches
-        fetch(`http://127.0.0.1:5000/locations/${locationId}`)
-          .then((response) => response.json())
-          .then((locationData) => {
-            console.log('Fetched location data:', locationData);
-  
-            // Calculate wind direction matches
-            const windDirectionMatches = WindCalcs.windDirections(surfData, locationData);
-            const enrichedSurfData = surfData.map((data, index) => ({
-              ...data,
-              windDirectionMatch: windDirectionMatches[index],
-            }));
-  
-            // Slice data into days and set enriched data
-            const day1 = enrichedSurfData.slice(0, 7);
-            const day2 = enrichedSurfData.slice(7, 14);
-            const day3 = enrichedSurfData.slice(14, 21);
-  
-            setData([day1, day2, day3]);
-            setIsLoading(false);
-          })
-          .catch((error) => console.error('Error fetching location data:', error));
-      })
-      .catch((error) => {
-        console.error('Fetch error:', error);
-        setIsLoading(false);
-      });
-  }, [locationId]);
+  if (!locationId) return;
 
-  // Fetch graph data
+  fetch(`http://127.0.0.1:5000/surf/${locationId}`)
+    .then((response) => response.json())
+    .then((surfData) => {
+      console.log('Fetched surf data:', surfData);
+
+      fetch(`http://127.0.0.1:5000/locations/${locationId}`)
+        .then((response) => response.json())
+        .then((locationData) => {
+          console.log('Fetched location data:', locationData);
+
+          const windDirectionMatches = RatingCalcs.windDirections(surfData, locationData);
+          const swellDirectionMatches = RatingCalcs.swellDirections(surfData, locationData);
+
+          const enrichedSurfData = surfData.map((data, index) => ({
+            ...data,
+            windDirectionMatch: windDirectionMatches[index],
+            swellDirectionMatch: swellDirectionMatches[index],
+          }));
+
+          console.log('Data_surf with Swell Direction Matches:', enrichedSurfData);
+
+          const day1 = enrichedSurfData.slice(0, 7);
+          const day2 = enrichedSurfData.slice(7, 14);
+          const day3 = enrichedSurfData.slice(14, 21);
+
+          setData([day1, day2, day3]);
+          setIsLoading(false);
+        })
+        .catch((error) => console.error('Error fetching location data:', error));
+    })
+    .catch((error) => {
+      console.error('Fetch error:', error);
+      setIsLoading(false);
+    });
+}, [locationId]);
+
+  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -107,8 +118,8 @@ export function MultiDay() {
         if (!response.ok) throw new Error(`Error: ${response.statusText}`);
 
         const json = await response.json();
-        console.log('Fetched graph data:', json);  // Log graph data
-        
+        console.log('Fetched graph data:', json);
+
         const startEntry = json.find((item) => item.graph_time === '00:00');
         const startId = startEntry ? startEntry.id : null;
 
@@ -143,7 +154,6 @@ export function MultiDay() {
     fetchData();
   }, [locationId]);
 
-  // Tooltip Handlers
   const handleMouseEnter = (event, dataPoint) => {
     if (!dataPoint) return;
     setTooltip({
@@ -158,24 +168,18 @@ export function MultiDay() {
     setTooltip({ ...tooltip, visible: false });
   };
 
-  // Find neighboring locations
   const currentIndex = locations.findIndex((loc) => loc.id === parseInt(locationId));
   const leftLocation = locations[currentIndex - 1];
   const rightLocation = locations[currentIndex + 1];
 
-  // Handle location change
   const handleLocationChange = (newLocationId) => {
-    // Add the transitioning class to the container to trigger fade effect
     const container = document.querySelector('.multiday-container');
     container.classList.add('transitioning');
-  
-    // Wait for the transition to finish, then navigate
+
     setTimeout(() => {
       navigate(`/results/${newLocationId}`);
-      
-      // After navigating, remove the transitioning class to reset state
       container.classList.remove('transitioning');
-    }, 600); // Wait for the fade effect duration (500ms in this case)
+    }, 600);
   };
 
   return (
@@ -183,7 +187,7 @@ export function MultiDay() {
       <div className="location-names grid grid-cols-3 justify-items-stretch mt-8">
         {leftLocation ? (
           <button
-            onClick={() => handleLocationChange(leftLocation.id)} 
+            onClick={() => handleLocationChange(leftLocation.id)}
             className="text-left justify-self-start text-gray-600 uppercase ml-5"
           >
             {leftLocation.location_name}-
@@ -198,7 +202,7 @@ export function MultiDay() {
         )}
         {rightLocation ? (
           <button
-            onClick={() => handleLocationChange(rightLocation.id)} 
+            onClick={() => handleLocationChange(rightLocation.id)}
             className="text-right justify-self-end text-gray-600 uppercase mr-5"
           >
             -{rightLocation.location_name}
@@ -223,23 +227,22 @@ export function MultiDay() {
                 />
               </div>
               <div className="forecast-container flex justify-center mt-5 overflow-x-auto space-x-1">
-  {data[index]?.map((forecast, idx) => (
-    <div
-      key={idx}
-      className={`${idx !== 6 ? 'border-r border-gray-700' : ''}`}
-      style={{
-        width: `${windowWidth / 8}px`,
-      }}
-    >
-      <ForecastSingle
-        key={forecast.id}
-        {...forecast}
-        windDirectionMatch={forecast.windDirectionMatch}
-      />
-    </div>
-  ))}
-</div>
-
+                {data[index]?.map((forecast, idx) => (
+                  <div
+                    key={idx}
+                    className={`${idx !== 6 ? 'border-r border-gray-700' : ''}`}
+                    style={{
+                      width: `${windowWidth / 8}px`,
+                    }}
+                  >
+                    <ForecastSingle
+                      key={forecast.id}
+                      {...forecast}
+                      windDirectionMatch={forecast.windDirectionMatch}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
