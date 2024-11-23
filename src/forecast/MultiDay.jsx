@@ -21,6 +21,8 @@ export function MultiDay() {
   const [calculatedWaveHeights, setCalculatedWaveHeights] = useState([]);
   const [waveHeightGroup, setWaveHeightGroup] = useState([]);
   const [sunTimes, setSunTimes] = useState([]);
+  const [tideData, setTideData] = useState([]); // New state for tide data
+
 
   
 
@@ -182,25 +184,6 @@ export function MultiDay() {
     setTooltip({ ...tooltip, visible: false });
   };
 
-  useEffect(() => {
-    if (!locationId) return; // Ensure locationId is valid before fetching
-  
-    fetch(`http://127.0.0.1:5000/tide-data/${locationId}`)
-      .then((response) => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.json();
-      })
-      .then((data) => {
-        console.log('Tide Heights', data);
-        setLocations(data);
-      })
-      .catch((error) => {
-        console.error('Error fetching locations:', error);
-      });
-  }, [locationId]);
-  
-
-
   const currentIndex = locations.findIndex((loc) => loc.id === parseInt(locationId));
   const leftLocation = locations[currentIndex - 1];
   const rightLocation = locations[currentIndex + 1];
@@ -264,6 +247,23 @@ export function MultiDay() {
       console.log("Mapped Sun Times:", mappedSunTimes);
     }
   }, [data]);
+
+  useEffect(() => {
+    if (!locationId) return;
+  
+    fetch(`http://127.0.0.1:5000/tide-data/${locationId}`)
+      .then((response) => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Tide Heights:', data);
+        setTideData(data); // Separate state for tide data
+      })
+      .catch((error) => {
+        console.error('Error fetching tide data:', error);
+      });
+  }, [locationId]);
   
 
   return (
@@ -281,7 +281,7 @@ export function MultiDay() {
         )}
         {locationName && (
           <h1 className="locationName justify-self-center w-max text-gray-300 uppercase">
-            -{locationName}-
+            - {locationName} -
           </h1>
         )}
         {rightLocation ? (
@@ -310,7 +310,7 @@ export function MultiDay() {
                   handleMouseLeave={handleMouseLeave}
                 />
                 {sunTimes[index] && (
-                  <div className="sun-times relative bottom-5 z-2 grid grid-cols-2 justify-items-stretch">
+                  <div className="sun-times relative bottom-5 z- grid grid-cols-2 justify-items-stretch">
                     <div className='text-yellow-300 font-light text-xs grid justify-items-start ml-20'>{sunTimes[index].sunrise}</div>
                     <div className='text-orange-500 font-light text-xs grid justify-items-end mr-20'>{sunTimes[index].sunset}</div>
                   </div>
