@@ -93,67 +93,77 @@ export function GraphContainer({ graphData = [] }) {
   return (
     <div className="graph-container flex flex-col items-center">
       <svg width={graphWidth} height={graphHeight}>
-        <rect x={0} y={0} width={graphWidth} height={graphHeight} fill="url(#area-background-gradient)" rx={0} />
-        <LinearGradient id="area-background-gradient" from="#000000" to="#134f5c"/>
-        <LinearGradient id="area-gradient" from="#6d8c8e" to="#5c7c80" toOpacity={0.01} />
-        <GridRows left={margin.left} scale={yScale} width={innerWidth} strokeDasharray="0,1" stroke="#edffea" />
-        <GridColumns
-          top={margin.top}
-          scale={xScale}
-          height={innerHeight}
-          strokeDasharray="0,1"
-          stroke="#edffea"
-          tickValues={[...Array(24).keys()]} 
-        />
-        {[...Array(24).keys()].map((hour) => (
-          <text
-            key={hour}
-            x={xScale(hour)}
-            y={innerHeight + margin.top + 15}
-            textAnchor="middle"
-            fill="#edffea"
-            fontSize={10}
-          >
-            {String(hour).padStart(2, '0')}:00
-          </text>
-        ))}
+  {/* Existing Background and Grid */}
+  <rect x={0} y={0} width={graphWidth} height={graphHeight} fill="url(#area-background-gradient)" rx={0} />
+  <LinearGradient id="area-background-gradient" from="#000000" to="#134f5c" />
+  <LinearGradient id="area-gradient" from="#6d8c8e" to="#5c7c80" toOpacity={0.01} />
+  <GridRows left={margin.left} scale={yScale} width={innerWidth} strokeDasharray="0,1" stroke="#edffea" />
+  <GridColumns
+    top={margin.top}
+    scale={xScale}
+    height={innerHeight}
+    strokeDasharray="0,1"
+    stroke="#edffea"
+    tickValues={[...Array(24).keys()]} 
+  />
+  
+  {/* Time Labels */}
+  {[...Array(24).keys()].map((hour) => (
+    <text
+      key={hour}
+      x={xScale(hour)}
+      y={innerHeight + margin.top + 15}
+      textAnchor="middle"
+      fill="#edffea"
+      fontSize={10}
+    >
+      {String(hour).padStart(2, '0')}:00
+    </text>
+  ))}
 
-        <AreaClosed
-          data={graphData}
-          x={(d) => xScale(parseInt(d.graph_time.split(':')[0]))}
-          y={(d) => yScale(d.tide_height)}
-          yScale={yScale}
-          strokeWidth={1}
-          stroke="url(#area-gradient)"
-          fill="url(#area-gradient)"
-          curve={curveBasis}
-        />
 
-        <Bar
-          x={margin.left}
-          y={margin.top}
-          width={innerWidth}
-          height={innerHeight}
-          fill="transparent"
-          rx={14}
-          onTouchStart={handleTooltip}
-          onTouchMove={handleTooltip}
-          onMouseMove={handleTooltip}
-          onMouseLeave={hideTooltip}
-        />
-        {tooltip.visible && (
-          <g>
-            <Line
-              from={{ x: tooltip.left, y: margin.top }}
-              to={{ x: tooltip.left, y: innerHeight + margin.top }}
-              stroke="#ffffff"
-              strokeWidth={1}
-              strokeDasharray="1,0"
-            />
-            <circle cx={tooltip.left} cy={tooltip.top} r={4} fill="#536c82" stroke="white" strokeWidth={1} />
-          </g>
-        )}
-      </svg>
+
+  {/* Existing AreaClosed Graph */}
+  <AreaClosed
+    data={graphData}
+    x={(d) => xScale(parseInt(d.graph_time.split(':')[0]))}
+    y={(d) => yScale(d.tide_height)}
+    yScale={yScale}
+    strokeWidth={.5}
+    stroke="url(#area-gradient)"
+    fill="url(#area-gradient)"
+    curve={curveBasis}
+  />
+
+  {/* Tooltip Area */}
+  <Bar
+    x={margin.left}
+    y={margin.top}
+    width={innerWidth}
+    height={innerHeight}
+    fill="transparent"
+    rx={14}
+    onTouchStart={handleTooltip}
+    onTouchMove={handleTooltip}
+    onMouseMove={handleTooltip}
+    onMouseLeave={hideTooltip}
+  />
+  
+  {/* Tooltip */}
+  {tooltip.visible && (
+    <g>
+      <Line
+        from={{ x: tooltip.left, y: margin.top }}
+        to={{ x: tooltip.left, y: innerHeight + margin.top }}
+        stroke="#ffffff"
+        strokeWidth={1}
+        strokeDasharray="1,0"
+      />
+      <circle cx={tooltip.left} cy={tooltip.top} r={4} fill="#536c82" stroke="white" strokeWidth={1} />
+    </g>
+  )}
+</svg>
+
       {tooltip.visible && (
         <div>
           <TooltipWithBounds top={tooltip.top - 12} left={tooltip.left + 12} style={tooltipStyles}>
@@ -164,17 +174,8 @@ export function GraphContainer({ graphData = [] }) {
           </Tooltip>
         </div>
       )}
-
       <div>
-     
-
-
-
-
-      
     </div>
-    </div>
-
-    
+  </div>  
   );
 }

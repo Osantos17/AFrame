@@ -20,6 +20,7 @@ export function MultiDay() {
   const [waveFactor, setWaveFactor] = useState([]);
   const [calculatedWaveHeights, setCalculatedWaveHeights] = useState([]);
   const [waveHeightGroup, setWaveHeightGroup] = useState([]);
+  const [sunTimes, setSunTimes] = useState([]);
 
   
 
@@ -217,7 +218,44 @@ export function MultiDay() {
       console.log('WaveHeightGroup:', groupedWaveHeights);
     }
   }, [calculatedWaveHeights]);
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      // Flatten the array if it contains nested arrays
+      const flatData = data.flat();
+      console.log("Flat Data:", flatData);
   
+      // Filter every 7th entry
+      const filteredData = flatData.filter((_, index) => index % 7 === 0);
+      console.log("Filtered Data:", filteredData);
+  
+      // Map sunrise and sunset times and convert to 12-hour format
+      const mappedSunTimes = filteredData.map((entry) => {
+        const formatTime = (time) => {
+          // Split the time into hour and minute
+          let [hour, minute] = time.split(':');
+          hour = parseInt(hour); // Convert to integer to remove leading zero if present
+          
+          // Determine AM or PM
+          const suffix = hour >= 12 ? 'PM' : 'AM';
+          
+          // Convert to 12-hour format
+          if (hour > 12) hour -= 12;
+          if (hour === 0) hour = 12; // Handle midnight as 12 AM
+          
+          // Return formatted time
+          return `${hour}:${minute} ${suffix}`;
+        };
+  
+        return {
+          sunrise: formatTime(entry.sunrise),
+          sunset: formatTime(entry.sunset),
+        };
+      });
+      setSunTimes(mappedSunTimes);
+      console.log("Mapped Sun Times:", mappedSunTimes);
+    }
+  }, [data]);
   
 
   return (
@@ -252,10 +290,10 @@ export function MultiDay() {
       {isLoading ? (
         <p>Loading data...</p>
       ) : (
-        <div className="graph-wrapper">
+        <div className="graph-wrapper relative">
           {graphData.map((dayData, index) => (
             <div key={index}>
-              <div className="graph-container">
+              <div className="graph-container relative">
                 <GraphContainer
                   width={graphWidth}
                   height={graphHeight}
@@ -263,8 +301,14 @@ export function MultiDay() {
                   handleMouseEnter={handleMouseEnter}
                   handleMouseLeave={handleMouseLeave}
                 />
+                {sunTimes[index] && (
+                  <div className="sun-times relative bottom-5 z-10 grid grid-cols-2 justify-items-stretch">
+                    <div className='text-yellow-300 font-light text-xs grid justify-items-start ml-20'>{sunTimes[index].sunrise}</div>
+                    <div className='text-orange-500 font-light text-xs grid justify-items-end mr-20'>{sunTimes[index].sunset}</div>
+                  </div>
+                )}
               </div>
-              <div className="forecast-container flex justify-center mt-5 overflow-x-auto space-x-1">
+              <div className="forecast-container flex justify-center mt-0 overflow-x-auto space-x-1">
               {data[index]?.map((forecast, idx) => (
                 <div
                   key={idx}
