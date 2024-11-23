@@ -166,11 +166,31 @@ export function GraphContainer({ graphData = [] }) {
 
       {tooltip.visible && (
         <div>
-          <TooltipWithBounds top={tooltip.top - 12} left={tooltip.left + 12} style={tooltipStyles}>
-            {`${tooltip.data.height} ft`}
+          <TooltipWithBounds top={tooltip.top - 20} left={tooltip.left - 15} style={tooltipStyles}>
+            <div className='text-white text-xs'>{`${tooltip.data.height} ft`}</div>
           </TooltipWithBounds>
-          <Tooltip top={innerHeight + margin.top - 14} left={tooltip.left} style={{ ...defaultStyles, minWidth: 72 }}>
-            {`${tooltip.data.time}`}
+          <Tooltip top={tooltip.top - 46} left={tooltip.left - 15} style={{ ...defaultStyles, background: 'none', color: 'white', fontSize: '12px' }}>
+          {
+  (() => {
+    // Ensure tooltip.data.time is in the correct format (HH:MM)
+    const timeString = tooltip.data.time;
+    const [hours, minutes] = timeString.split(':');
+
+    // Create a Date object, treating the time as UTC (1970-01-01)
+    const time = new Date(Date.UTC(1970, 0, 1, hours, minutes));
+
+    // Format the time in 12-hour format (AM/PM)
+    let formattedHours = time.getUTCHours();
+    let formattedMinutes = time.getUTCMinutes();
+
+    // Convert to 12-hour format
+    formattedHours = formattedHours % 12 || 12;  // Convert 0 hours to 12
+    formattedMinutes = formattedMinutes < 10 ? `0${formattedMinutes}` : formattedMinutes;
+
+    return `${formattedHours}:${formattedMinutes}`;
+  })()
+}
+
           </Tooltip>
         </div>
       )}
